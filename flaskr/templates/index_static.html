@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Device Control Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-4">Device Control Dashboard</h2>
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="relays-tab" data-toggle="tab" href="#relays" role="tab" aria-controls="relays" aria-selected="true">Relays</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="sensors-tab" data-toggle="tab" href="#sensors" role="tab" aria-controls="sensors" aria-selected="false">Sensors</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="lamps-tab" data-toggle="tab" href="#lamps" role="tab" aria-controls="lamps" aria-selected="false">Lamps</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="experiment-tab" data-toggle="tab" href="#experiment" role="tab" aria-controls="experiment" aria-selected="false">Experiment</a>
+            </li>
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="relays" role="tabpanel" aria-labelledby="relays-tab">
+                <!-- Control Panel for "relays" Tab (previously shown example) -->
+                <div class="card" style="width: 25rem;">
+                    <div class="card-header"> Relay Control Dashboard </div>
+                    <div class="card-body">
+                      <!-- <h5 class="card-title">Relay Control Dashboard</h5>
+                      <h6 class="card-subtitle mb-2 text-muted">Relays are cool</h6> -->
+                        <div class="device-row d-flex align-items-center justify-content-start">
+                            <div class="mr-3">Relay1:</div>
+                            <div class="mr-3" id="device-state-relay1">STATE - Off</div>
+                            <button class="btn btn-outline-primary" onclick="toggleDevice('relay1')">Toggle</button>
+                        </div>
+                        <div class="device-row d-flex align-items-center justify-content-start">
+                            <div class="mr-3">Relay2:</div>
+                            <div class="mr-3" id="device-state-relay2">STATE - Off</div>
+                            <button class="btn btn-outline-primary" onclick="toggleDevice('relay2')">Toggle</button>
+                        </div>
+                        <div class="device-row d-flex align-items-center justify-content-start">
+                            <div class="mr-3">Relay3:</div>
+                            <div class="mr-3" id="device-state-relay3">STATE - Off</div>
+                            <button class="btn btn-outline-primary" onclick="toggleDevice('relay3')">Toggle</button>
+                        </div>
+                        <div class="device-row d-flex align-items-center justify-content-start">
+                            <div class="mr-3">Relay4:</div>
+                            <div class="mr-3" id="device-state-relay4">STATE - Off</div>
+                            <button class="btn btn-outline-primary" onclick="toggleDevice('relay4')">Toggle</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="sensors" role="tabpanel" aria-labelledby="sensors-tab">
+                <!-- Content for "sensors" Tab -->
+                <div class="card" style="width: 25rem;">
+                    <div class="card-header"> Sensors Control Dashboard </div>
+                    <div class="card-body">
+                      <!-- <h5 class="card-title">Relay Control Dashboard</h5>
+                      <h6 class="card-subtitle mb-2 text-muted">Relays are cool</h6> -->
+                        <p>Sensors control panel and information...</p>
+                        <div class="device-row d-flex align-items-center justify-content-start">
+                            <div class="mr-3">DS18B20 temp:</div>
+                            <div id="device-state-temp1">Waiting for temp1 data...</div>
+                            <div class="mr-3"> &#x2103 </div>
+                        </div>
+                        <div class="device-row d-flex align-items-center justify-content-start">
+                            <div class="mr-3">DHT22 internal temp:</div>
+                            <div id="device-state-temp2">Waiting for temp2 data...</div>
+                            <div class="mr-3"> &#x2103 </div>
+                        </div>
+                        <div class="device-row d-flex align-items-center justify-content-start">
+                            <div class="mr-3">DHT22 internal hum:</div>
+                            <div id="device-state-hum2">Waiting for hum2 data...</div>
+                            <div class="mr-3"> % </div>
+                        </div>
+                        <div class="device-row d-flex align-items-center justify-content-start">
+                            <div class="mr-3">DHT22 external temp:</div>
+                            <div id="device-state-temp3">Waiting for temp3 data...</div>
+                            <div class="mr-3"> &#x2103 </div>
+                        </div>
+                        <div class="device-row d-flex align-items-center justify-content-start">
+                            <div class="mr-3">DHT22 external hum:</div>
+                            <div id="device-state-hum3">Waiting for hum3 data...</div>
+                            <div class="mr-3"> % </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="tab-pane fade" id="lamps" role="tabpanel" aria-labelledby="lamps-tab">
+                <!-- Content for "Lamps" Tab -->
+                <div class="card" style="width: 25rem;">
+                    <div class="card-header"> Lamps Control Dashboard </div>
+                    <div class="card-body">
+                        <p>Lamps control panel and information...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="experiment" role="tabpanel" aria-labelledby="experiment-tab">
+                <!-- Content for "Experiment" Tab -->
+                <p>Experiment control panel and information...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function fetchDeviceStates() {
+        fetch('/get-all-device-states')
+            .then(response => response.json())
+            .then(deviceStates => {
+                // Iterate over the device states and update the corresponding elements
+                for (const [deviceId, state] of Object.entries(deviceStates)) {
+                    const stateElement = document.getElementById(`device-state-${deviceId}`);
+                    if (stateElement) {
+                        stateElement.innerText = `${state}`;
+                    }
+                }
+            })
+            .catch(error => console.error('Error fetching device states:', error))
+            .finally(() => {
+                // Schedule the next fetch
+                setTimeout(fetchDeviceStates, 2000); // Adjust the interval as needed
+            });
+    }
+    // important function to update web-page without user actions to see actual exp state
+    window.onload = function() {
+        fetchDeviceStates(); // Start fetching device states when the page loads
+    };
+     // relay buttons handling script
+        function toggleDevice(deviceId) {
+            fetch(`/toggle-relay?relayId=${deviceId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById(`device-state-${deviceId}`).innerText = `${data.state}`;
+                });
+        }
+
+        // Initialize Bootstrap tabs
+        $('#myTab a').on('click', function (e) {
+            e.preventDefault();
+            $(this).tab('show');
+        });
+    </script>
+</body>
+</html>

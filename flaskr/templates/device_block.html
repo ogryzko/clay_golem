@@ -1,0 +1,55 @@
+        <div class="mb-3">
+            <!-- Device Controls Row -->
+            <div class="d-flex justify-content-between align-items-center control-row">
+                <span>
+                    <strong>{{ device.params.name }}</strong>
+                    <span class="status-indicator" id="device{{ device.params.device_id }}_status_indicator">{{ device.params.status }}</span>
+                </span>
+                <span>
+                    <span id="device{{ device.params.device_id }}_last_response">{{ device.params.last_time_active }}</span>
+                    <button class="btn btn-outline-light ms-2" type="button" onclick="toggleVisibility('paramsTable{{ device.params.device_id }}')">Parameters</button>
+                </span>
+                <span>
+                    <select class="form-select me-2" style="width: auto; display: inline-block;" id="device{{ device.params.device_id }}_command">
+                        {% for command in device.commands.keys() %}
+                            <option value="{{ command }}">{{ command }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="text" class="form-control me-2" style="width: auto; display: inline-block;" id="device{{ device.params.device_id }}_arg" placeholder="Argument">
+                    <button type="button" class="btn btn-light me-2" onclick="sendCommand('{{ device.params.device_id }}')">Send</button>
+
+                </span>
+            </div>
+            <!-- Parameters Table -->
+            <div id="paramsTable{{ device.params.device_id }}" style="display: none;">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for param, value in device.params.items() %}
+                            <tr>
+                                <td>{{ param }}</td>
+                                <td>{{ value }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- Data Table (Always Visible) -->
+            <div id="dataTable{{ device.params.device_id }}">
+                <table class="table">
+                    <tbody>
+                        {% for data_key, data_value in device.data.items() %}
+                            <tr>
+                                <td>{{ data_key }}</td>
+                                <td>{{ data_value }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
