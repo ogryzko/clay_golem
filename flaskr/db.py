@@ -1,141 +1,130 @@
 import redis
 import click
 from flask import current_app, g
-import random
-from datetime import datetime
-
-# must be stored in redis
-# but for test here, as global variable
-# device_states = {
-#     'relay1': 'Off',
-#     'relay2': 'Off',
-#     'relay3': 'Off',
-#     'relay4': 'Off',
-#     'temp1': 23,
-#     'temp2': 48,
-#     'hum2': 67,
-#     'temp3': 26,
-#     'hum3': 56,
-#     'leds_red': 100,
-#     'leds_white': 120,
-#     'leds_state': 'Off'
-#     # Add more devices as needed
-# }
-
-# hierarchical dictionaries to store all data about in it
-
-relay1_dict = {
-    "params":
-    {
-        "name": "Relay 1",
-        "device_id": 10,
-        "last_time_active": datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),
-        "type": "relay",
-        "uptime_sec": 13245,
-        "description": "relay that rules air pump N1",
-        "status": "error 3132"
-    },
-    "commands":
-    {
-        "set_on": None,
-        "set_off": None
-    },
-    "data":
-    {
-        "state": "on"
-    }
-}
-
-relay2_dict = {
-    "params":
-    {
-        "name": "Relay 2",
-        "device_id": 11,
-        "last_time_active": datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),
-        "type": "relay",
-        "uptime_sec": 13005,
-        "description": "relay that rules air pump N2",
-        "status": "ok"
-    },
-    "commands":
-    {
-        "set_on": None,
-        "set_off": None
-
-    },
-    "data":
-    {
-        "state": "on"
-    }
-}
-
-sensor1_dict = {
-    "params":
-    {
-        "name": "DHT22 internal",
-        "device_id": 12,
-        "last_time_active": datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),
-        "type": "sensor",
-        "uptime_sec": 15001,
-        "description": "dht22 internal temp and hum data",
-        "status": "ok"
-    },
-    "commands":
-    {
-        "get_temp": None,
-        "get_hum": None
-    },
-    "data":
-    {
-        "humidity": 78,
-        "temperature": 34,
-    }
-}
-
-devices = [
-    relay1_dict, relay2_dict, sensor1_dict
-]
+import sqlite3
+from sqlite3 import Error
 
 
 def get_device_states():
-    # simulation of reading updated data from redis
-    global devices
-    for d in devices:
-        d["params"]["last_time_active"] = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
-        d["params"]["uptime_sec"] += 1
-
-        if d["params"]["type"] == "relay":
-            pass
-            # d["data"]["state"] = "off "
-        if d["params"]["type"] == "sensor":
-            d["data"]["humidity"] = random.randint(50, 90)
-            d["data"]["temperature"] = random.randint(20, 40)
-    return devices
+    """method to update flask web page data from db"""
+    # lets load all devices data from redis hashes
+    red = get_db()
+    reconstructed_devices = []
+    for device_dict in current_app.config['DEVICES']:
+        # to get needed names
+        dev_id = device_dict["params"]["device_id"]
+        recon_device = {}   # updated dict
+        # update device params from redis
+        for key in device_dict.keys():
+            hash_name = f"device_{dev_id}:{key}"
+            recon_device[key] = red.hgetall(hash_name)
+        # load it to updated list
+        reconstructed_devices.append(recon_device)
+    return reconstructed_devices
 
 
 def get_db():
+    """
+    we have operational db - redis and data db - sqlite
+    this method returns redis pointer
+    :return:
+    """
     if 'db' not in g:
-        # g.db = redis.
-        pass
+        # TODO update from config in future
+        g.db = redis.Redis(host='localhost', port=6379, decode_responses=True)   # mb it is important to already decode
+    return g.db
 
+
+def get_data_db():
+    """
+    we have operational db - redis and data db - sqlite
+    this method returns sqlite db pointer
+    :return:
+    """
+    if 'db' not in g:
+        # TODO update from config in future
+        g.db = redis.Redis(host='localhost', port=6379, decode_responses=True)   # mb it is important to already decode
     return g.db
 
 
 def close_db(e=None):
     db = g.pop('db', None)
-
     if db is not None:
         db.close()
 
 
 def init_db():
-    db = get_db()
-    # some init of redis
+    """ this method must be called only when server created or re-created, it will fully rewrite devices data """
+    devices_conf_list = current_app.config['DEVICES']
+
+    red = get_db()
+    print("Deleting current redis keys to clear app state.")
+    # clear all device_* data from db0
+    # Pattern to match
+    pattern = 'device_*'
+
+    # Use SCAN to find keys matching the pattern
+    # SCAN returns a tuple (cursor, [list of keys])
+    # We start with cursor 0, and SCAN iterates until cursor returns 0 again
+    cursor = '0'
+    while cursor != 0:
+        cursor, keys = red.scan(cursor=cursor, match=pattern, count=100)
+        for key in keys:
+            # Delete each key
+            red.delete(key)
+            print(f"Deleted key: {key}")
+
+    print("Finished deleting keys.")
+
+    # load data from devices config file and store it to redis
+    # iterate over all fields in all devices in list
+    print("Loading new redis keys from app config")
+    for device_dict in devices_conf_list:
+        dev_id = device_dict["params"]["device_id"]
+        # Store each sub-dictionary in its own hash
+        for key, val in device_dict.items():
+            hash_name = f"device_{dev_id}:{key}"
+            for field, value in val.items():
+                red.hset(hash_name, field, value if value is not None else "")
+    print("Finished loading new keys")
+
+    # create tables in sqlite db for all devices in list
+
+    # remove all old sql tables
+    # TODO mb simply remove or rename old sqlite db file if already exists
+
+    # create db or connection
+    data_db_path = current_app.instance_path + "/" + current_app.config['DATA_DB_NAME']
+    if "data_db" not in g:
+        g.data_db = sqlite3.connect(
+            data_db_path,  #current_app.config['DATABASE'],
+            detect_types=sqlite3.PARSE_DECLTYPES
+        )
+        # g.db.row_factory = sqlite3.Row
+
+    # then create tables for all
+    print("Loading new sql tables from app config to data db")
+    for device_dict in devices_conf_list:
+        dev_id = device_dict["params"]["device_id"]
+        try:
+            # one table contain one type of data
+            # so one sensor can have multiple tables
+            for d in device_dict["data"]:
+                sql_create_sensor_data_table = f"""CREATE TABLE IF NOT EXISTS device_{dev_id}_{d} (
+                                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                    datetime DATETIME NOT NULL,
+                                                    value REAL NOT NULL
+                                                );"""
+                cursor = g.data_db.cursor()
+                cursor.execute(sql_create_sensor_data_table)
+        except Error as e:
+            print("sqlite database fucked up somehow: {}".format(e))
+    print("finished loading new sql tables from app config to data db")
 
 
 @click.command('init-db')
 def init_db_command():
-    """Clear the existing data and create new tables."""
+    """Clear the existing data in redis and sqlite and create new tables."""
     init_db()
     click.echo('Initialized the database.')
 

@@ -1,29 +1,23 @@
 import os
-
+import redis
+import rq
 from flask import Flask, render_template, jsonify, request
 from . import db
+from . import hardware
+from .tasks.data_logger_cycle import update_device_data
+from .tasks.ventilation_loop import ventilation_loop
+from .tasks.start_tasks import init_tasks
 
 
-def create_app(test_config=None):
+def create_app():
     # create and configure the app
-    app = Flask(__name__, instance_relative_config=True)
-    app.config.from_mapping(
-        SECRET_KEY='dev',
-        DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
-    )
-
-    if test_config is None:
-        # load the instance config, if it exists, when not testing
-        app.config.from_pyfile('config.py', silent=True)
-    else:
-        # load the test config if passed in
-        app.config.from_mapping(test_config)
-
-    # ensure the instance folder exists
-    try:
-        os.makedirs(app.instance_path)
-    except OSError:
-        pass
+    instance_path = os.path.join(os.getcwd(), "instance")   # finally
+    app = Flask(__name__,  instance_path=instance_path, instance_relative_config=True)
+    # print(app.instance_path)
+    res = app.config.from_pyfile('config.py')
+    print(f"Keys loaded from current app config: {res}")
+    for key in app.config:
+        print(key)
 
     # a simple page that says hello
     @app.route('/hello')
@@ -33,30 +27,32 @@ def create_app(test_config=None):
     # main page with all controls
     @app.route('/')
     def index():
-        return render_template('index.html', devices=db.devices)
+        return render_template('index.html', devices=db.get_device_states())
 
-    # relay toggling route
-    @app.route('/toggle-relay', methods=['POST'])
-    def toggle_relay():
-        relayId = request.args.get('relayId')  # Retrieve deviceId from query string
-        print(relayId)
-        new_states = db.get_device_states()
-        if relayId in new_states:
-            # Toggle the device state
-            new_states[relayId] = 'On' if new_states[relayId] == 'Off' else 'Off'
-            # Return the new state as JSON
-            return jsonify(state=new_states[relayId])
-        else:
-            # Return an error if the deviceId is not found
-            return jsonify(error="Device not found"), 404
+    # handler user commands for all devices
+    @app.route('/handle-request', methods=['POST'])
+    def handle_request():
+        try:
+            # Parse the JSON data
+            data = request.get_json()
 
-    # led lamp controls
-    @app.route('/control-leds', methods=['POST'])
-    def control_leds():
+            # Extract the device ID, command, and argument from the data
+            device_id = data.get('device_id')
+            command = data.get('command')
+            arg = data.get('arg')
 
-        #sdfdsfdsf
-        command, value = request.args.get('relayId')  # Retrieve deviceId from query string
-        return jsonify("started")
+            # Handle the command (you would replace this with your actual command handling logic)
+            success = hardware.handle_command(device_id, command, arg)
+
+            # Return a success response
+            if success:
+                return jsonify({'status': 'ok'}), 200
+            else:
+                return jsonify({'status': 'error', 'error': 'Failed to handle command'}), 500
+        except Exception as e:
+            # Return an error response if something goes wrong
+            return jsonify({'status': 'error', 'error': str(e)}), 500
+
 
     @app.route('/get-device-updates')
     def get_device_updates():
@@ -64,6 +60,10 @@ def create_app(test_config=None):
         new_states = db.get_device_states()
         return jsonify(new_states)
 
+    # init database
     db.init_app(app)
+
+    # init tasks
+    init_tasks(app)
 
     return app

@@ -1,0 +1,165 @@
+from datetime import datetime
+# config file to pseudo securely store data about experiment, hardware and app
+#
+
+RELAY_1_DICT = {
+    "params":
+    {
+        "name": "Relay 1",
+        "device_id": 1,
+        "last_time_active": datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),
+        "type": "relay",
+        "family": "esphome_switch",
+        "uptime_sec": 0,
+        "description": "relay that controls air pump blowing outside",
+        "status": "ok",
+        "last_error": "",
+        "esphome_name": "kolos-3_relay1"
+    },
+    "commands":
+    {
+        "set_on": None,
+        "set_off": None
+    },
+    "data":
+    {
+        "state": "ON"
+    }
+}
+
+RELAY_2_DICT = {
+    "params":
+    {
+        "name": "Relay 2",
+        "device_id": 2,
+        "last_time_active": datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),
+        "type": "relay",
+        "family": "esphome_switch",
+        "uptime_sec": 0,
+        "description": "relay that controls air pump blowing inside",
+        "status": "ok",
+        "last_error": "",
+        "esphome_name": "kolos-3_relay2"
+    },
+    "commands":
+    {
+        "set_on": None,
+        "set_off": None
+    },
+    "data":
+    {
+        "state": "ON"
+    }
+}
+
+RELAY_3_DICT = {
+    "params":
+    {
+        "name": "Relay 3",
+        "device_id": 3,
+        "last_time_active": datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),
+        "type": "relay",
+        "family": "esphome_switch",
+        "uptime_sec": 0,
+        "description": "relay that controls air vent for outside stream",
+        "status": "ok",
+        "last_error": "",
+        "esphome_name": "kolos-3_relay3"
+    },
+    "commands":
+    {
+        "set_on": None,
+        "set_off": None
+    },
+    "data":
+    {
+        "state": "ON"
+    }
+}
+
+RELAY_4_DICT = {
+    "params":
+    {
+        "name": "Relay 4",
+        "device_id": 4,
+        "last_time_active": datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),
+        "type": "relay",
+        "family": "esphome_switch",
+        "uptime_sec": 0,
+        "description": "relay that controls air vent for inside stream",
+        "status": "ok",
+        "last_error": "",
+        "esphome_name": "kolos-3_relay4"
+    },
+    "commands":
+    {
+        "set_on": None,
+        "set_off": None
+    },
+    "data":
+    {
+        "state": "ON"
+    }
+}
+
+SENSOR_DHT22_1_DICT = {
+    "params":
+    {
+        "name": "DHT22 internal",
+        "device_id": 5,
+        "last_time_active": datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),
+        "type": "sensor",
+        "family": "esphome_dht22",
+        "uptime_sec": 0,
+        "description": "dht22 internal temp and hum data",
+        "status": "ok",
+        "last_error": "",
+        "esphome_name": "kolos-3_dht_internal_"  # need to add temp or hum
+    },
+    "commands":
+    {
+        "get_temp": None,
+        "get_hum": None
+    },
+    "data":
+    {
+        "humidity": 0,
+        "temperature": 0,
+    }
+}
+
+SENSOR_DS18B20_1_DICT = {
+    "params":
+    {
+        "name": "DS18B20 internal",
+        "device_id": 6,
+        "last_time_active": datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),
+        "type": "sensor",
+        "family": "esphome_ds18b20",   # to create python handler
+        "uptime_sec": 0,
+        "description": "DS18B20 internal temp data",
+        "status": "ok",
+        "last_error": "",
+        "esphome_name": "kolos-3_ext-temperature"
+    },
+    "commands":
+    {
+        "get_temp": None
+    },
+    "data":
+    {
+        "temperature": 0
+    }
+}
+
+ESP_IP_ADDR = "10.10.0.7"
+ESP_AUTH_LOGIN = "admin"
+ESP_AUTH_PASS = "rumata"
+SECRET_KEY = 'dev'
+DATA_DB_NAME = "data.sqlite"
+#DATABASE = "/home/bigfoot/PycharmProjects/clay_golem/instance/data.sqlite"
+
+DEVICES = [
+    RELAY_1_DICT, RELAY_2_DICT, RELAY_3_DICT, RELAY_4_DICT, SENSOR_DHT22_1_DICT, SENSOR_DS18B20_1_DICT
+]
+
