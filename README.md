@@ -46,12 +46,16 @@ All js scripts stored in flaskr/templates folder. They are very simple
 
 
 ### Installation
-1. install python3, pip, venv;  install redis
-2. sudo mkdir /opt/clay
-3. sudo chown -R <your_user>:<your_user> /opt/clay
+1. install python3, pip, venv;  
+2. install redis [link](https://redis.io/docs/install/install-redis/install-redis-on-linux/)
+3. ```sudo mkdir /opt/clay```
+4. ```sudo chown -R <your_user>:<your_user> /opt/clay```
 4. clone project from github to /opt/clay so it will be in /opt/clay/clay_golem
-5. create new venv inside /opt/clay/clay_golem and activate it
-6. install requirements via pip -r
+5. create new venv inside /opt/clay/clay_golem and activate it  
+```python3 -m venv venv```   
+then use ```source /opt/clay/clay_golem/venv/bin/activate```
+6. install requirements via pip -r   
+```pip install -r requirements.txt```
 7. create or copy config.py file with hardware configuration
 8. manually create systemd services for 
    1. web-server with gunicorn wsgi

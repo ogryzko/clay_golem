@@ -1,6 +1,5 @@
 redis
 rq
-sqlite3
 Flask
 click
 gunicorn
