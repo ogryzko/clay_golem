@@ -7,17 +7,16 @@ import sqlite3
 from datetime import datetime
 from ..drivers import esphome_driver
 
-# NOTE  !!!!
-# before run rq worker in console you need to run
-# export PYTHONPATH="/home/bigfoot/PycharmProjects/clay_golem/flaskr"
-# and ALL imports must start from flaskr.smth.smth ...
-# else it will crash
 
 
-def update_device_data(config, db_path, device_dict, rhost, rport, qname):
+def update_device_data(config, db_path, device_name):
     """
     main goal - to get actual devices state info from hardware and store it to redis
     """
+    device_dict = config[device_name]
+    rhost = config['REDIS_HOST']
+    rport = config["REDIS_PORT"]
+    qname = config["QUEUE"]
     red = redis.Redis(host=rhost, port=rport, decode_responses=True)
     queue_ = rq.Queue(connection=red, name=qname)
 
@@ -59,7 +58,8 @@ def update_device_data(config, db_path, device_dict, rhost, rport, qname):
 
         except Exception as e:
             red.hset(f"device_{d_id}:params", "status", "error")
-            red.hset(f"device_{d_id}:params", "last_error", e.__str__())
+            red.hset(f"device_{d_id}:params", "last_error", e.__str__() +
+                     datetime.now().strftime("%d/%m/%Y, %H:%M:%S"))
 
     if device_dict["params"]["family"] == "esphome_dht22":
         # we need make two web api calls - for humidity and for temperature
@@ -89,7 +89,8 @@ def update_device_data(config, db_path, device_dict, rhost, rport, qname):
                          f"esphome web api status {status[0]}")
         except Exception as e:
             red.hset(f"device_{d_id}:params", "status", "error")
-            red.hset(f"device_{d_id}:params", "last_error", e.__str__())
+            red.hset(f"device_{d_id}:params", "last_error", e.__str__() +
+                     datetime.now().strftime("%d/%m/%Y, %H:%M:%S"))
 
         try:
             status = dht_temp.get()  # get is all method for our esphome devices via web-api
@@ -111,7 +112,8 @@ def update_device_data(config, db_path, device_dict, rhost, rport, qname):
                          f"esphome web api status {status[0]}")
         except Exception as e:
             red.hset(f"device_{d_id}:params", "status", "error")
-            red.hset(f"device_{d_id}:params", "last_error", e.__str__())
+            red.hset(f"device_{d_id}:params", "last_error", e.__str__() +
+                     datetime.now().strftime("%d/%m/%Y, %H:%M:%S"))
 
     # esphome ds18b20
     if device_dict["params"]["family"] == "esphome_ds18b20":
@@ -140,9 +142,10 @@ def update_device_data(config, db_path, device_dict, rhost, rport, qname):
                          f"esphome web api status {status[0]}")
         except Exception as e:
             red.hset(f"device_{d_id}:params", "status", "error")
-            red.hset(f"device_{d_id}:params", "last_error", e.__str__())
+            red.hset(f"device_{d_id}:params", "last_error", e.__str__() +
+                     datetime.now().strftime("%d/%m/%Y, %H:%M:%S"))
 
     # schedule itself again
     time.sleep(1)
-    queue_.enqueue(update_device_data, config, db_path, device_dict, rhost, rport, qname)
+    queue_.enqueue(update_device_data, config, db_path, device_name)
 

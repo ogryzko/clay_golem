@@ -7,6 +7,7 @@ from . import hardware
 from .tasks.data_logger_cycle import update_device_data
 from .tasks.ventilation_loop import ventilation_loop
 from .tasks.start_tasks import init_tasks
+from .systemd_handle import init_systemd_handlers
 
 
 def create_app():
@@ -16,8 +17,8 @@ def create_app():
     # print(app.instance_path)
     res = app.config.from_pyfile('config.py')
     print(f"Keys loaded from current app config: {res}")
-    for key in app.config:
-        print(key)
+    # for key in app.config:
+    #     print(key)
 
     # a simple page that says hello
     @app.route('/hello')
@@ -65,5 +66,8 @@ def create_app():
 
     # init tasks
     init_tasks(app)
+
+    # init systemd handle cli commands
+    init_systemd_handlers(app)
 
     return app

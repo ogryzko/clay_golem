@@ -1,0 +1,12 @@
+[Unit]
+Description=Gunicorn instance to serve Clay Golem flask app
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/clay/clay_golem/
+Environment="PATH=/opt/clay/clay_golem/venv/bin"
+ExecStart=/opt/clay/clay_golem/venv/bin/gunicorn -c /opt/clay/clay_golem/gunicorn.conf.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

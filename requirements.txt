@@ -1,0 +1,7 @@
+redis
+rq
+sqlite3
+Flask
+click
+gunicorn
+rq-dashboard

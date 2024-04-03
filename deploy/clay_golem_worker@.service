@@ -1,0 +1,12 @@
+[Unit]
+Description=RQ Worker  to serve Clay Golem flask app at background
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/clay/clay_golem/
+Environment="PATH=/opt/clay/clay_golem/venv/bin"
+ExecStart=/opt/clay/clay_golem/venv/bin/flask --app flaskr start-worker
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
