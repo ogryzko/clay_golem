@@ -4,3 +4,4 @@ Flask
 click
 gunicorn
 rq-dashboard
+requests
