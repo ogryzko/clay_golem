@@ -11,6 +11,9 @@ import datetime
 
 @click.command('start-tasks')
 def start_tasks_command():
+    """
+    Create rq jobs from python files in tasks directory
+    """
     # # start redis queue tasks for data logging and lss control loop
     red = redis.Redis(host='localhost', port=6379)
 
@@ -48,8 +51,7 @@ def start_tasks_command():
 @click.command('start-worker')
 def start_worker():
     """
-    start one regular worker and block this process
-    :return:
+    Manually start one regular worker and block this process
     """
     red = redis.Redis(host='localhost', port=6379)
     queue = rq.Queue('default', connection=red)
@@ -62,8 +64,7 @@ def start_worker():
 @click.command('start-scheduler')
 def start_scheduler():
     """
-    start one regular worker and block this process
-    :return:
+    Manually tart one scheduler and block this process
     """
     red = redis.Redis(host='localhost', port=6379)
     queue = rq.Queue('default', connection=red)
@@ -75,6 +76,9 @@ def start_scheduler():
 
 @click.command('clear-queue')
 def clear_queue():
+    """
+    Clear redis queue from all rq jobs
+    """
     red = redis.Redis(host='localhost', port=6379)
     queue = rq.Queue('default', connection=red)
     # Empty the queue
@@ -93,6 +97,9 @@ def clear_queue():
 
 @click.command('kill-all-workers')
 def kill_all_workers():
+    """
+    Manually kill all worker processes
+    """
     red = redis.Redis(host='localhost', port=6379)
     queue = rq.Queue('default', connection=red)
     workers = rq.Worker.all(queue=queue)

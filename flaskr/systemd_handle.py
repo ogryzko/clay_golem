@@ -17,7 +17,7 @@ def start_app_systemd():
     service_name = current_app.config["SYSTEMD_APP_NAME"]
     try:
         print(f"Starting {service_name}...")
-        subprocess.run(['systemctl', 'start', service_name], check=True)
+        subprocess.run(['sudo', 'systemctl', 'start', service_name], check=True)
         print(f"{service_name} started successfully.")
     except subprocess.CalledProcessError as e:
         print(f"Failed to start {service_name}: {e}")
@@ -35,7 +35,7 @@ def start_workers_systemd():
         for i in range(1, num_workers + 1):
             service_name = f"{service_name_base}{i}"
             print(f"Starting {service_name}...")
-            subprocess.run(['systemctl', 'start', service_name], check=True)
+            subprocess.run(['sudo', 'systemctl', 'start', service_name], check=True)
             print(f"{service_name} started.")
     except subprocess.CalledProcessError as e:
         print(f"Error occurred while starting services: {e}")
@@ -43,7 +43,7 @@ def start_workers_systemd():
     scheduler_name = current_app.config["SYSTEMD_SCHEDULER_NAME"]
     try:
         print(f"Starting {scheduler_name}...")
-        subprocess.run(['systemctl', 'start', scheduler_name], check=True)
+        subprocess.run(['sudo', 'systemctl', 'start', scheduler_name], check=True)
         print(f"{scheduler_name} started successfully.")
     except subprocess.CalledProcessError as e:
         print(f"Failed to start {scheduler_name}: {e}")
@@ -59,7 +59,7 @@ def stop_workers_systemd():
     service_name_pattern = current_app.config["SYSTEMD_WORKER_NAME"]
     try:
         # List all active systemd units
-        completed_process = subprocess.run(['systemctl', 'list-units', '--no-legend', '--plain'],
+        completed_process = subprocess.run(['sudo', 'systemctl', 'list-units', '--no-legend', '--plain'],
                                            stdout=subprocess.PIPE, text=True, check=True)
         units = completed_process.stdout.splitlines()
 
@@ -69,7 +69,7 @@ def stop_workers_systemd():
 
         for service in services_to_stop:
             print(f"Stopping {service}...")
-            subprocess.run(['systemctl', 'stop', service], check=True)
+            subprocess.run(['sudo', 'systemctl', 'stop', service], check=True)
             print(f"{service} stopped.")
 
         if not services_to_stop:
@@ -80,7 +80,7 @@ def stop_workers_systemd():
     scheduler_name = current_app.config["SYSTEMD_SCHEDULER_NAME"]
     try:
         print(f"Starting {scheduler_name}...")
-        subprocess.run(['systemctl', 'stop', scheduler_name], check=True)
+        subprocess.run(['sudo', 'systemctl', 'stop', scheduler_name], check=True)
         print(f"{scheduler_name} stopped successfully.")
     except subprocess.CalledProcessError as e:
         print(f"Failed to stop {scheduler_name}: {e}")
@@ -94,7 +94,7 @@ def stop_app_systemd():
     service_name = current_app.config["SYSTEMD_APP_NAME"]
     try:
         print(f"Starting {service_name}...")
-        subprocess.run(['systemctl', 'stop', service_name], check=True)
+        subprocess.run(['sudo', 'systemctl', 'stop', service_name], check=True)
         print(f"{service_name} stopped successfully.")
     except subprocess.CalledProcessError as e:
         print(f"Failed to stop {service_name}: {e}")

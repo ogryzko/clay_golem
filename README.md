@@ -50,18 +50,30 @@ All js scripts stored in flaskr/templates folder. They are very simple
 2. install redis [link](https://redis.io/docs/install/install-redis/install-redis-on-linux/)
 3. ```sudo mkdir /opt/clay```
 4. ```sudo chown -R <your_user>:<your_user> /opt/clay```
-4. clone project from github to /opt/clay so it will be in /opt/clay/clay_golem
-5. create new venv inside /opt/clay/clay_golem and activate it  
+5. clone project from github to /opt/clay so it will be in /opt/clay/clay_golem
+6. create new venv inside /opt/clay/clay_golem and activate it  
 ```python3 -m venv venv```   
 then use ```source /opt/clay/clay_golem/venv/bin/activate```
-6. install requirements via pip -r   
+7. install requirements via pip -r   
 ```pip install -r requirements.txt```
-7. create or copy config.py file with hardware configuration
-8. manually create systemd services for 
+8. ```mkdir instance```  
+and create or copy config.py with hardware configuration to  ./instance file 
+9. manually copy systemd service files for 
    1. web-server with gunicorn wsgi
+   ```sudo cp ./deploy/clay_golem.service /etc/systemd/system/clay_golem.service```
    2. rq-scheduler
+   ```sudo cp ./deploy/clay_golem_scheduler.service /etc/systemd/system/clay_golem_scheduler.service```
    3. rq-workers (via template)
-9. allow selected app port in firewall if there is such
+   ```sudo cp ./deploy/clay_golem_worker@.service /etc/systemd/system/clay_golem_worker@.service```
+10. reload systemd ```sudo systemctl daemon-reload```
+11. enable all needed services
+    * ```sudo systemctl enable clay_golem_scheduler.service```
+    * ```sudo systemctl enable clay_golem.service```
+    * ```sudo systemctl enable clay_golem_worker@1.service```
+    * ```sudo systemctl enable clay_golem_worker@2.service```
+    * ```sudo systemctl enable clay_golem_worker@3.service```
+    *  ... enable as many workers as you need (look at config.py to check your current num of rq workers)
+12. allow selected app port in firewall if there is such
 
 ### Configuration
 All hardware configuration, database, all app paths, 
@@ -73,17 +85,17 @@ network addresses stores in default flask config in same format
 ### How to start
 All console commands related to app can be run with flask click wrapper to store 
 unified config file and app context in all operations related to app
-1. go to app folder
+1. go to app folder, init venv
 2. run ```flask --app flaskr init-db``` to create or clean existing db
 3. run ```flask --app flaskr start-tasks``` to create rq-tasks corresponded to config
 4. run ```flask --app flaskr start-workers``` 
 5. run ```flask --app flaskr start-app``` 
 
 ### How to stop
-1. go to app folder
+1. go to app folder, init venv
 2. run ```flask --app flaskr clear-queue``` to remove 
 jobs of all types from rq queue
-3. run ```flask --app flaskr kill-all-workers``` to stop all workers from systemd
+3. run ```flask --app flaskr stop-workers``` to stop all workers from systemd
 4. run ```flask --app flaskr stop-app```
 
 ### Uninstall
