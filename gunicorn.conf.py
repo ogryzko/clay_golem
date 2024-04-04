@@ -18,8 +18,8 @@ config_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Assuming your Flask app and virtual environment are relative to this config's location
 # Update these paths according to your project structure
-app_dir = os.path.join(config_dir, 'flaskr')
-venv_path = os.path.join(config_dir, 'path/to/your/venv')
+app_dir = config_dir  #os.path.join(config_dir)
+venv_path = os.path.join(config_dir, 'venv')
 
 # Automatically find the IP address of the wg0 interface
 ip_address = get_ip_address('wg0')
