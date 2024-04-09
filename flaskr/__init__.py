@@ -1,6 +1,7 @@
 import os
 import redis
 import rq
+import rq_dashboard
 from flask import Flask, render_template, jsonify, request
 from . import db
 from . import hardware
@@ -14,9 +15,14 @@ def create_app():
     # create and configure the app
     instance_path = os.path.join(os.getcwd(), "instance")   # finally
     app = Flask(__name__,  instance_path=instance_path, instance_relative_config=True)
+    # app.config["RQ_DASHBOARD_REDIS_URL"] = "redis://127.0.0.1:6379"
+
+
     # print(app.instance_path)
     res = app.config.from_pyfile('config.py')
     print(f"Keys loaded from current app config: {res}")
+    rq_dashboard.web.setup_rq_connection(app)
+    app.register_blueprint(rq_dashboard.blueprint, url_prefix="/rq")
     # for key in app.config:
     #     print(key)
 

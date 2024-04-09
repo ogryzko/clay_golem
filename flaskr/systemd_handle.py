@@ -79,7 +79,7 @@ def stop_workers_systemd():
 
     scheduler_name = current_app.config["SYSTEMD_SCHEDULER_NAME"]
     try:
-        print(f"Starting {scheduler_name}...")
+        print(f"Stopping {scheduler_name}...")
         subprocess.run(['sudo', 'systemctl', 'stop', scheduler_name], check=True)
         print(f"{scheduler_name} stopped successfully.")
     except subprocess.CalledProcessError as e:
@@ -93,7 +93,7 @@ def stop_app_systemd():
     """
     service_name = current_app.config["SYSTEMD_APP_NAME"]
     try:
-        print(f"Starting {service_name}...")
+        print(f"Stopping {service_name}...")
         subprocess.run(['sudo', 'systemctl', 'stop', service_name], check=True)
         print(f"{service_name} stopped successfully.")
     except subprocess.CalledProcessError as e:

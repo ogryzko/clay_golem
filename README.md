@@ -73,20 +73,21 @@ and create or copy config.py with hardware configuration to  ./instance file
     * ```sudo systemctl enable clay_golem_worker@2.service```
     * ```sudo systemctl enable clay_golem_worker@3.service```
     *  ... enable as many workers as you need (look at config.py to check your current num of rq workers)
-12. allow selected app port in firewall if there is such
+12. allow selected app host and port in firewall if there is such
 
 ### Configuration
 All hardware configuration, database, all app paths, 
 network addresses stores in default flask config in same format
 #### Logic of hardware handling
 #### Logic of creating and handling rq tasks
-#### Config file 
+#### config.py file 
+#### gunicorn.conf.py
 
 ### How to start
 All console commands related to app can be run with flask click wrapper to store 
 unified config file and app context in all operations related to app
 1. go to app folder, init venv
-2. run ```flask --app flaskr init-db``` to create or clean existing db
+2. run ```flask --app flaskr init-db``` to create or clean existing db (if you need to fully remove all previous state of devices from redis)
 3. run ```flask --app flaskr start-tasks``` to create rq-tasks corresponded to config
 4. run ```flask --app flaskr start-workers``` 
 5. run ```flask --app flaskr start-app``` 
@@ -98,7 +99,10 @@ jobs of all types from rq queue
 3. run ```flask --app flaskr stop-workers``` to stop all workers from systemd
 4. run ```flask --app flaskr stop-app```
 
+### How to change something in automation logic
+
 ### Uninstall
 1. manually remove systemd services
 2. manually remove app directory
-3. manually remove venv
+3. uninstall redis using apt
+
