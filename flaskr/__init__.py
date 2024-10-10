@@ -36,6 +36,23 @@ def create_app():
     def index():
         return render_template('index.html', devices=db.get_device_states())
 
+    # обработчик для эксперимента
+    @app.route('/handle-experiment', methods=['POST'])
+    def handle_experiment():
+        try:
+            # Получаем данные из JSON-запроса
+            data = request.get_json()
+            
+            # Здесь должна быть логика обработки эксперимента
+            # Например, можно вызвать соответствующую функцию из модуля hardware
+            
+            # Заглушка для демонстрации
+            result = {"status": "success", "message": "Эксперимент успешно обработан"}
+            
+            return jsonify(result), 200
+        except Exception as e:
+            return jsonify({"status": "error", "message": str(e)}), 500
+    
     # handler user commands for all devices
     @app.route('/handle-request', methods=['POST'])
     def handle_request():
