@@ -18,11 +18,12 @@ def main():
             value = relay.get_sensor_value(sensor)
             print(f"{sensor}: {value}")
         
-        # Переключаем реле ch1
-        print("\nПереключаем ch1...")
-        relay.set_relay_state('ch1', True)  # Включаем
-        time.sleep(2)  # Ждем 2 секунды
-        relay.set_relay_state('ch1', False)  # Выключаем
+        # Переключаем реле
+        success, message = relay.set_relay_state(1, 1)
+        if success:
+            print(f"Реле успешно переключено: {message}")
+        else:
+            print(f"Ошибка переключения реле: {message}")
         
     except Exception as e:
         print(f"Произошла ошибка: {e}")

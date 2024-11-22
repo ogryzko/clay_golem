@@ -43,15 +43,30 @@ class ESP32RelayDriver:
         Args:
             channel (int): Channel number (0-3)
             state (int): State to set (0 or 1)
+        Returns:
+            tuple: (bool, str) - (успех операции, текст ответа)
         """
         headers = {'Content-Type': 'application/json'}
         data = {"channel": channel, "state": state}
-        response = requests.post(
-            f"{self.base_url}/relay",
-            headers=headers,
-            data=json.dumps(data)
-        )
-        return response.status_code == 200
+        
+        try:
+            response = requests.post(
+                f"{self.base_url}/relay",
+                headers=headers,
+                data=json.dumps(data)
+            )
+            
+            result = response.text.strip()
+            
+            if "ERROR" in result:
+                return False, result
+            elif "SUCCESS" in result:
+                return True, result
+            
+            return False, f"Неожиданный ответ: {result}"
+            
+        except Exception as e:
+            return False, f"Ошибка запроса: {str(e)}"
 
     def reset_device(self):
         """Force reset the device"""

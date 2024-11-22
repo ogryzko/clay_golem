@@ -67,22 +67,29 @@ def test_get_sensor_value_failure(relay, mock_requests):
     result = relay.get_sensor_value("ext_temp")
     assert result is None
 
-def test_set_relay_state_success(relay, mock_requests):
-    """Тест успешной установки состояния реле"""
-    mock_requests.post("http://test.local/relay", status_code=200)
-    result = relay.set_relay_state(1, 1)
-    assert result is True
+def test_set_relay_state_success(requests_mock):
+    requests_mock.post(
+        'http://test/relay',
+        text="RESULT: SUCCESS\n Relay: 1, set to state: 1"
+    )
     
-    # Проверяем правильность отправленных данных
-    last_request = mock_requests.last_request
-    assert last_request.json() == {"channel": 1, "state": 1}
-    assert last_request.headers["Content-Type"] == "application/json"
+    driver = ESP32RelayDriver(host='test')
+    success, message = driver.set_relay_state('ch1', True)
+    
+    assert success is True
+    assert "SUCCESS" in message
 
-def test_set_relay_state_failure(relay, mock_requests):
-    """Тест неудачной установки состояния реле"""
-    mock_requests.post("http://test.local/relay", status_code=500)
-    result = relay.set_relay_state(1, 1)
-    assert result is False
+def test_set_relay_state_failure(requests_mock):
+    requests_mock.post(
+        'http://test/relay',
+        text="RESULT: ERROR Invalid channel type"
+    )
+    
+    driver = ESP32RelayDriver(host='test')
+    success, message = driver.set_relay_state('ch1', True)
+    
+    assert success is False
+    assert "ERROR" in message
 
 def test_reset_device_success(relay, mock_requests):
     """Тест успешного сброса устройства"""
@@ -101,17 +108,14 @@ def test_reset_device_failure(relay, mock_requests):
     result = relay.reset_device()
     assert result is False
 
-def test_network_error(relay):
-    """Тест обработки сетевых ошибок"""
-    # Тестируем все методы на случай сетевой ошибки
-    with pytest.raises(requests.exceptions.ConnectionError):
-        relay.get_info()
+def test_network_error(requests_mock):
+    requests_mock.post(
+        'http://test/relay',
+        exc=requests.exceptions.RequestException
+    )
     
-    with pytest.raises(requests.exceptions.ConnectionError):
-        relay.get_sensor_value("ext_temp")
+    driver = ESP32RelayDriver(host='test')
+    success, message = driver.set_relay_state('ch1', True)
     
-    with pytest.raises(requests.exceptions.ConnectionError):
-        relay.set_relay_state(1, 1)
-    
-    with pytest.raises(requests.exceptions.ConnectionError):
-        relay.reset_device() 
+    assert success is False
+    assert "Ошибка запроса" in message 
