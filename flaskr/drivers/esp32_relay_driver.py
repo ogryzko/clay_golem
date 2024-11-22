@@ -1,5 +1,6 @@
 import requests
 import json
+from typing import Union, Tuple, Dict, Any
 
 class ESP32RelayDriver:
     """
@@ -37,17 +38,24 @@ class ESP32RelayDriver:
             return value
         return None
 
-    def set_relay_state(self, channel, state):
+    def set_relay_state(self, channel: Union[str, int], state: Union[bool, int]) -> Tuple[bool, str]:
         """
         Set relay state
         Args:
-            channel (int): Channel number (0-3)
-            state (int): State to set (0 or 1)
+            channel (Union[str, int]): Channel name or number (ch1, ch2, etc. or 1, 2)
+            state (Union[bool, int]): State to set (True/False or 1/0)
         Returns:
-            tuple: (bool, str) - (успех операции, текст ответа)
+            Tuple[bool, str]: (success, message)
         """
-        headers = {'Content-Type': 'application/json'}
-        data = {"channel": channel, "state": state}
+        headers: Dict[str, str] = {'Content-Type': 'application/json'}
+        
+        # Преобразуем bool в int если нужно
+        state_value = 1 if state in [True, 1] else 0
+        
+        data: Dict[str, Any] = {
+            "channel": channel,
+            "state": state_value
+        }
         
         try:
             response = requests.post(
@@ -56,11 +64,20 @@ class ESP32RelayDriver:
                 data=json.dumps(data)
             )
             
-            result = response.text.strip()
+            result: str = response.text.strip()
             
-            if "ERROR" in result:
+            # Проверяем все возможные ошибки
+            error_messages = [
+                "ERROR Failed to parse JSON",
+                "ERROR Invalid channel type",
+                "ERROR Invalid state type",
+                "ERROR invalid params!"
+            ]
+            
+            if any(error in result for error in error_messages):
                 return False, result
-            elif "SUCCESS" in result:
+            
+            if "SUCCESS" in result:
                 return True, result
             
             return False, f"Неожиданный ответ: {result}"
