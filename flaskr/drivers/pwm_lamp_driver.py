@@ -52,7 +52,7 @@ class PWMLampDriver:
     
     def reset_device(self) -> Tuple[bool, str]:
         """
-        Перезагрузка устройства
+        Перезагрузка устройства 
         Returns:
             tuple: (успех операции, текст ответа)
         """
