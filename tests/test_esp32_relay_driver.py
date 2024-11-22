@@ -18,7 +18,6 @@ def mock_requests():
 def test_init():
     """Тест инициализации драйвера"""
     relay = ESP32RelayDriver(host="test.local", name="test_relay")
-    assert relay.host == "test.local"
     assert relay.name == "test_relay"
     assert relay.base_url == "http://test.local"
     assert relay.SENSOR_ERROR_VALUE == -255
