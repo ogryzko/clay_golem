@@ -52,20 +52,22 @@ class PWMLampDriver:
     
     def reset_device(self) -> Tuple[bool, str]:
         """
-        Перезагрузка устройства 
+        Перезагрузка устройства
         Returns:
-            tuple: (успех операции, текст ответа)
+            Tuple[bool, str]: (успех операции, текст ответа)
+                success: True если устройство перезагружается, False в противном случае
+                message: Сообщение от устройства
         """
-        headers = {'Content-Type': 'text/html'}
+        headers: Dict[str, str] = {'Content-Type': 'text/html'}
         try:
-            response = requests.post(
+            response: requests.Response = requests.post(
                 f"{self.base_url}/reset",
                 headers=headers,
                 data='force_reset'
             )
-            result = response.text.strip()
+            result: str = response.text.strip()
             
-            if "rebooting" in result:
+            if "force reset command" in result.lower() and "rebooting" in result.lower():
                 return True, result
             return False, result
             
