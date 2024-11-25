@@ -103,7 +103,8 @@
     </div>
     <div class="tab-pane fade" id="experiment" role="tabpanel" aria-labelledby="experiment-tab">
         <!-- Experiment Devices or Content -->
-        <p> There will be controls for whole experiment </p>
+        <p> There will be controls for whole experiment</p>
+    <button type="button" class="btn btn-primary" onclick="sendExperimentCommand('startExperiment')">Начать эксперимент</button>
     </div>
 </div>
 
@@ -171,6 +172,21 @@
         e.preventDefault();
         $(this).tab('show');
     });
+
+    function sendExperimentCommand(command) {
+        $.ajax({
+            url: '/handle-experiment',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ command: command }),
+            success: function(response) {
+                console.log('Команда эксперимента отправлена успешно');
+            },
+            error: function(xhr, status, error) {
+                console.error('Ошибка при отправке команды эксперимента:', error);
+            }
+        });
+    }
 
     function sendCommand(deviceId) {
         // Get the command and argument values
