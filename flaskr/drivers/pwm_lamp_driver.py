@@ -31,10 +31,25 @@ class PWMLampDriver(BaseDriver):
         Returns:
             tuple: (успех операции, текст ответа)
         """
-        if not (0 <= channel <= 3) or not (0 <= duty <= 100):
-            self.logger.warning(f"Invalid parameters: channel={channel}, duty={duty}")
-            return False, "Некорректные параметры"
-            
+        # Проверка, что channel является целым числом
+        if not isinstance(channel, int):
+            self.logger.error("Invalid channel type: %s. Channel must be an integer.", type(channel))
+            raise ValueError("Channel must be an integer.")
+        
+        # Проверка, что duty является целым числом
+        if not isinstance(duty, int):
+            self.logger.error("Invalid duty type: %s. Duty must be an integer.", type(duty))
+            raise ValueError("Duty must be an integer.")
+        
+        # Проверка диапазона значений
+        if not (0 <= channel <= 3):
+            self.logger.error("Invalid channel value: %d. Channel must be between 0 and 3.", channel)
+            raise ValueError("Channel must be between 0 and 3.")
+        
+        if not (0 <= duty <= 100):
+            self.logger.error("Invalid duty value: %d. Duty must be between 0 and 100.", duty)
+            raise ValueError("Duty must be between 0 and 100.")
+        
         headers = {'Content-Type': 'application/json'}
         data = {"channel": channel, "duty": duty}
         

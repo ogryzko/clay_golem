@@ -56,7 +56,6 @@ def main():
             logger.info("Успешно установлена скважность на канале 1: %s", message)
         else:
             logger.error("Ошибка при установке скважности на канале 1: %s", message)
-
         # # Перезагружаем устройство
         # success, message = pwm_driver.reset_device()
         # if success:

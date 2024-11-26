@@ -73,7 +73,7 @@ def test_set_relay_state_success(requests_mock):
     )
     
     driver = ESP32RelayDriver(host='test')
-    success, message = driver.set_relay_state('ch1', True)
+    success, message = driver.set_relay_state(1, True)
     
     assert success is True
     assert "SUCCESS" in message
@@ -85,7 +85,7 @@ def test_set_relay_state_failure(requests_mock):
     )
     
     driver = ESP32RelayDriver(host='test')
-    success, message = driver.set_relay_state('ch1', True)
+    success, message = driver.set_relay_state(1, True)
     
     assert success is False
     assert "ERROR" in message
@@ -114,7 +114,22 @@ def test_network_error(requests_mock):
     )
     
     driver = ESP32RelayDriver(host='test')
-    success, message = driver.set_relay_state('ch1', True)
+    success, message = driver.set_relay_state(1, True)
     
     assert success is False
-    assert "Ошибка запроса" in message 
+    assert "Ошибка запроса" in message
+
+def test_set_relay_state_invalid_channel_and_state(relay, mock_requests):
+    """Тест неудачной попытки установки состояния реле с неверными аргументами"""
+    
+    # Проверка с неверным типом канала
+    with pytest.raises(ValueError, match="Channel must be an integer."):
+        relay.set_relay_state("ch0", 1)  # channel как строка
+
+    # Проверка с неверным типом состояния
+    with pytest.raises(ValueError, match="State must be either 0 or 1."):
+        relay.set_relay_state(1, "0")  # state как строка
+
+    # Проверка с недопустимым значением состояния
+    with pytest.raises(ValueError, match="State must be either 0 or 1."):
+        relay.set_relay_state(1, 9)  # state как 9 
