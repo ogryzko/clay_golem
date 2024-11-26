@@ -117,3 +117,8 @@ class ESP32RelayDriver(BaseDriver):
         except Exception as e:
             self.logger.error(f"Error during device reset: {str(e)}")
         return False
+
+if __name__ == "__main__":
+    lamp1 = ESP32RelayDriver("esp32_relay_5.local", name="relay5")  # ("10.10.0.12")
+    print(lamp1.get_info())
+    print(lamp1.set_relay_state(0, 9))

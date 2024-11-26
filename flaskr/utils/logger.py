@@ -8,7 +8,7 @@ class Logger:
         logger = logging.getLogger(name)
         if not logger.handlers:
             # Создаем директорию logs если её нет
-            logs_dir = 'logs'
+            logs_dir = '/opt/clay/clay_golem/logs'
             if not os.path.exists(logs_dir):
                 os.makedirs(logs_dir)
             
@@ -20,8 +20,8 @@ class Logger:
             console_handler = logging.StreamHandler()
             
             # Настраиваем форматирование
-            formatter = logging.Formatter('%(levelname)s-%(asctime)s-%(name)s-%(message)s',
-                                       datefmt='%Y-%m-%d-%H:%M:%S')
+            formatter = logging.Formatter('%(levelname)s - %(asctime)s - %(name)s - %(message)s',
+                                       datefmt='%Y-%m-%d - %H:%M:%S')
             
             # Применяем форматирование к обоим обработчикам
             file_handler.setFormatter(formatter)
