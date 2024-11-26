@@ -1,6 +1,11 @@
 import pytest
 from flaskr.drivers.pwm_lamp_driver import PWMLampDriver
 
+@pytest.fixture
+def pwm_driver():
+    """Создание экземпляра PWMLampDriver для тестов"""
+    return PWMLampDriver(host="test.local")
+
 def test_reset_device_success(requests_mock):
     """Тест успешной перезагрузки"""
     driver = PWMLampDriver(host="test.local")
@@ -71,19 +76,24 @@ def test_set_pwm_success(requests_mock):
     assert success is True
     assert "SUCCESS" in message
 
-def test_set_pwm_invalid_params():
+def test_set_pwm_invalid_params(pwm_driver):
     """Тест установки PWM с некорректными параметрами"""
-    driver = PWMLampDriver(host="test.local")
     
     # Тест некорректного канала
-    success, message = driver.set_pwm(channel=5, duty=50)
-    assert success is False
-    assert "Некорректные параметры" in message
-    
+    with pytest.raises(ValueError, match="Channel must be between 0 and 3."):
+        pwm_driver.set_pwm(channel=5, duty=50)  # channel вне диапазона
+
     # Тест некорректного значения duty
-    success, message = driver.set_pwm(channel=0, duty=101)
-    assert success is False
-    assert "Некорректные параметры" in message
+    with pytest.raises(ValueError, match="Duty must be between 0 and 100."):
+        pwm_driver.set_pwm(channel=0, duty=150)  # duty вне диапазона
+
+    # Тест некорректного типа канала
+    with pytest.raises(ValueError, match="Channel must be an integer."):
+        pwm_driver.set_pwm(channel="invalid_channel", duty=50)  # channel как строка
+
+    # Тест некорректного типа duty
+    with pytest.raises(ValueError, match="Duty must be an integer."):
+        pwm_driver.set_pwm(channel=0, duty="invalid_duty")  # duty как строка
 
 def test_set_pwm_failure(requests_mock):
     """Тест неуспешной установки PWM"""
@@ -95,4 +105,20 @@ def test_set_pwm_failure(requests_mock):
     
     success, message = driver.set_pwm(channel=0, duty=50)
     assert success is False
-    assert "ERROR" in message 
+    assert "ERROR" in message
+
+def test_set_pwm_invalid_channel(pwm_driver):
+    """Тест неудачной попытки установки скважности с неверным каналом"""
+    with pytest.raises(ValueError, match="Channel must be an integer."):
+        pwm_driver.set_pwm("invalid_channel", 50)  # channel как строка
+
+    with pytest.raises(ValueError, match="Channel must be between 0 and 3."):
+        pwm_driver.set_pwm(5, 50)  # channel вне диапазона
+
+def test_set_pwm_invalid_duty(pwm_driver):
+    """Тест неудачной попытки установки скважности с неверным значением duty"""
+    with pytest.raises(ValueError, match="Duty must be an integer."):
+        pwm_driver.set_pwm(0, "invalid_duty")  # duty как строка
+
+    with pytest.raises(ValueError, match="Duty must be between 0 and 100."):
+        pwm_driver.set_pwm(0, 150)  # duty вне диапазона 

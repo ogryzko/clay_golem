@@ -48,19 +48,30 @@ class ESP32RelayDriver(BaseDriver):
             self.logger.error(f"Error getting sensor value for {sensor_type}: {str(e)}")
         return None
 
-    def set_relay_state(self, channel: Union[str, int], state: Union[bool, int]) -> Tuple[bool, str]:
+    def set_relay_state(self, channel: int, state: Union[bool, int]) -> Tuple[bool, str]:
         """
         Set relay state
         Args:
-            channel (Union[str, int]): Channel name or number (ch1, ch2, etc. or 1, 2)
+            channel (int): Channel number (must be an integer)
             state (Union[bool, int]): State to set (True/False or 1/0)
         Returns:
             Tuple[bool, str]: (success, message)
         """
         headers: Dict[str, str] = {'Content-Type': 'application/json'}
         
+        # Проверка, что channel является целым числом
+        if not isinstance(channel, int):
+            self.logger.error(f"Invalid channel type: {type(channel)}. Must be an integer.")
+            raise ValueError("Channel must be an integer.")
+        
         # Преобразуем bool в int если нужно
-        state_value = 1 if state in [True, 1] else 0
+        if isinstance(state, bool):
+            state_value = 1 if state else 0
+        elif isinstance(state, int) and state in [0, 1]:
+            state_value = state
+        else:
+            self.logger.error(f"Invalid state value: {state}. Must be 0 or 1.")
+            raise ValueError("State must be either 0 or 1.")
         
         data: Dict[str, Any] = {
             "channel": channel,
