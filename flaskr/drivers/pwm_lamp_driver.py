@@ -106,4 +106,5 @@ if __name__ == "__main__":
     lamp1 = PWMLampDriver("10.10.0.14")
     print(lamp1.get_info())
     print(lamp1.set_pwm(0, 0))
+    print(lamp1.set_pwm(1, 0))
 
