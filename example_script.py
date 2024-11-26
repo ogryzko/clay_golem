@@ -7,7 +7,7 @@ from flaskr.utils.logger import Logger
 def main():
     logger = Logger.get_logger(__name__)
 
-    relay = ESP32RelayDriver(host="10.10.0.5")
+    relay = ESP32RelayDriver(host="10.10.0.12")
     
     try:
         # Получаем информацию об устройстве
@@ -32,7 +32,7 @@ def main():
     except Exception as e:
         logger.error("Произошла ошибка: %s", str(e))
 
-    pwm_driver = PWMLampDriver(host="10.10.0.7")
+    pwm_driver = PWMLampDriver(host="10.10.0.14")
 
     try:
         # Получаем информацию о лампе
@@ -56,13 +56,12 @@ def main():
             logger.info("Успешно установлена скважность на канале 1: %s", message)
         else:
             logger.error("Ошибка при установке скважности на канале 1: %s", message)
-
-        # Перезагружаем устройство
-        success, message = pwm_driver.reset_device()
-        if success:
-            logger.info("Устройство успешно перезагружено.")
-        else:
-            logger.error("Ошибка при перезагрузке устройства: %s", message)
+        # # Перезагружаем устройство
+        # success, message = pwm_driver.reset_device()
+        # if success:
+        #     logger.info("Устройство успешно перезагружено.")
+        # else:
+        #     logger.error("Ошибка при перезагрузке устройства: %s", message)
 
     except Exception as e:
         logger.error("Произошла ошибка с PWM-лампой: %s", str(e))
