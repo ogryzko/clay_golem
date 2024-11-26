@@ -1,9 +1,9 @@
 redis
-rq
 Flask
 click
 gunicorn
-rq-dashboard
 requests
 pytest
 requests-mock
+pyserial
+thread
