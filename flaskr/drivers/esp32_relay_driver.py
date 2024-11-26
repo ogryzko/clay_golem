@@ -1,8 +1,9 @@
 import requests
 import json
 from typing import Union, Tuple, Dict, Any
+from flaskr.drivers.base_driver import BaseDriver
 
-class ESP32RelayDriver:
+class ESP32RelayDriver(BaseDriver):
     """
     Driver for ESP32 relay based on API from https://github.com/houseofbigseals/esp32_relay
     """
@@ -12,16 +13,19 @@ class ESP32RelayDriver:
             host (str): IP address or hostname of ESP32 (example: '10.10.0.7' or 'esp32_relay_4.local')
             name (str): Name identifier for the relay
         """
-        self.host = host
-        self.name = name
-        self.base_url = f"http://{host}"
+        super().__init__(host, name)
         self.SENSOR_ERROR_VALUE = -255  # Значение, означающее что датчик не установлен или сломан
 
     def get_info(self):
         """Get state of all relays and sensors"""
-        response = requests.get(f"{self.base_url}/info")
-        if response.status_code == 200:
-            return response.json()
+        try:
+            response = requests.get(f"{self.base_url}/info")
+            self.logger.debug(f"Got info response: {response.json()}")
+            if response.status_code == 200:
+                return response.json()
+            self.logger.warning(f"Unexpected status code: {response.status_code}")
+        except Exception as e:
+            self.logger.error(f"Error getting info: {str(e)}")
         return None
 
     def get_sensor_value(self, sensor_type):
@@ -30,12 +34,18 @@ class ESP32RelayDriver:
         Args:
             sensor_type (str): One of: ext_temp, ext_hum, int_temp, int_hum, roots_temp
         """
-        response = requests.get(f"{self.base_url}/{sensor_type}")
-        if response.status_code == 200:
-            value = float(response.text)
-            if value == self.SENSOR_ERROR_VALUE:
-                return None
-            return value
+        try:
+            response = requests.get(f"{self.base_url}/{sensor_type}")
+            self.logger.debug(f"Got sensor value response: {response.text}")
+            if response.status_code == 200:
+                value = float(response.text)
+                if value == self.SENSOR_ERROR_VALUE:
+                    self.logger.warning(f"Sensor error value received for {sensor_type}")
+                    return None
+                return value
+            self.logger.warning(f"Unexpected status code for sensor {sensor_type}: {response.status_code}")
+        except Exception as e:
+            self.logger.error(f"Error getting sensor value for {sensor_type}: {str(e)}")
         return None
 
     def set_relay_state(self, channel: Union[str, int], state: Union[bool, int]) -> Tuple[bool, str]:
@@ -58,6 +68,7 @@ class ESP32RelayDriver:
         }
         
         try:
+            self.logger.debug(f"Setting relay state: channel={channel}, state={state_value}")
             response = requests.post(
                 f"{self.base_url}/relay",
                 headers=headers,
@@ -75,22 +86,34 @@ class ESP32RelayDriver:
             ]
             
             if any(error in result for error in error_messages):
+                self.logger.warning(f"Error setting relay state: {result}")
                 return False, result
             
             if "SUCCESS" in result:
+                self.logger.info(f"Successfully set relay state: channel={channel}, state={state_value}")
                 return True, result
             
+            self.logger.warning(f"Unexpected response when setting relay state: {result}")
             return False, f"Неожиданный ответ: {result}"
             
         except Exception as e:
+            self.logger.error(f"Error setting relay state: {str(e)}")
             return False, f"Ошибка запроса: {str(e)}"
 
     def reset_device(self):
         """Force reset the device"""
         headers = {'Content-Type': 'text/html'}
-        response = requests.post(
-            f"{self.base_url}/reset",
-            headers=headers,
-            data='force_reset'
-        )
-        return response.status_code == 200
+        try:
+            self.logger.info("Attempting to reset the device")
+            response = requests.post(
+                f"{self.base_url}/reset",
+                headers=headers,
+                data='force_reset'
+            )
+            if response.status_code == 200:
+                self.logger.info("Device reset successful")
+                return True
+            self.logger.warning(f"Device reset failed with status code: {response.status_code}")
+        except Exception as e:
+            self.logger.error(f"Error during device reset: {str(e)}")
+        return False
