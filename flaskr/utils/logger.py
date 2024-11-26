@@ -21,7 +21,7 @@ class Logger:
                 os.path.join(logs_dir, f'error_{datetime.now().strftime("%Y-%m-%d")}.log'),
                 when='midnight',
                 interval=1,
-                backupCount=7  # Хранить 7 дней логов
+                backupCount=90  # Хранить 90 дней логов
             )
             error_handler.setLevel(logging.ERROR)
             error_formatter = logging.Formatter('%(levelname)s - %(asctime)s - %(name)s - %(message)s',
@@ -34,9 +34,9 @@ class Logger:
                 os.path.join(logs_dir, f'warning_{datetime.now().strftime("%Y-%m-%d")}.log'),
                 when='midnight',
                 interval=1,
-                backupCount=7
+                backupCount=90  # Хранить 90 дней логов
             )
-            warning_handler.setLevel(logging.WARNING)
+            warning_handler.setLevel(logging.ERROR)  # Устанавливаем уровень на ERROR
             warning_handler.setFormatter(error_formatter)  # Можно использовать тот же формат
             logger.addHandler(warning_handler)
 
@@ -45,7 +45,7 @@ class Logger:
                 os.path.join(logs_dir, f'info_{datetime.now().strftime("%Y-%m-%d")}.log'),
                 when='midnight',
                 interval=1,
-                backupCount=7
+                backupCount=90  # Хранить 90 дней логов
             )
             info_handler.setLevel(logging.INFO)
             info_handler.setFormatter(error_formatter)
@@ -56,7 +56,7 @@ class Logger:
                 os.path.join(logs_dir, f'debug_{datetime.now().strftime("%Y-%m-%d")}.log'),
                 when='midnight',
                 interval=1,
-                backupCount=7
+                backupCount=90  # Хранить 90 дней логов
             )
             debug_handler.setLevel(logging.DEBUG)
             debug_handler.setFormatter(error_formatter)
