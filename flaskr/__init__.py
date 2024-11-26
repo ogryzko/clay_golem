@@ -21,8 +21,8 @@ def create_app():
     # print(app.instance_path)
     res = app.config.from_pyfile('config.py')
     print(f"Keys loaded from current app config: {res}")
-    rq_dashboard.web.setup_rq_connection(app)
-    app.register_blueprint(rq_dashboard.blueprint, url_prefix="/rq")
+    #rq_dashboard.web.setup_rq_connection(app)
+    #app.register_blueprint(rq_dashboard.blueprint, url_prefix="/rq")
     # for key in app.config:
     #     print(key)
 

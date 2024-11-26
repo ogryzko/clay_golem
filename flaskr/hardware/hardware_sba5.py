@@ -54,12 +54,6 @@ class SBAWrapper(object):
         @ - Turns measurement display on.
         ? - Display the SBA-5 configuration currently in use.
         ] - Restore the factory default configuration.
-
-
-
-
-
-        
         """
         # \r\n
         try:
