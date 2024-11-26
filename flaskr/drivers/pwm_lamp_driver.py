@@ -72,4 +72,10 @@ class PWMLampDriver:
             return False, result
             
         except Exception as e:
-            return False, f"Ошибка запроса: {str(e)}" 
+            return False, f"Ошибка запроса: {str(e)}"
+
+
+if __name__ == "__main__":
+    lamp1 = PWMLampDriver("10.10.0.14")
+    print(lamp1.get_info())
+    print(lamp1.set_pwm(0, 0))
