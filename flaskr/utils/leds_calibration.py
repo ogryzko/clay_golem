@@ -76,14 +76,14 @@ def set_duty(red, white, device):
     if device == "exp":
         l1.set_pwm(0, white)
         l1.set_pwm(1, white)
-        l1.set_pwm(0, red)
-        l1.set_pwm(1, red)
+        l1.set_pwm(2, red)
+        l1.set_pwm(3, red)
 
     elif device == "ctr":
         l2.set_pwm(0, white)
-        l2.set_pwm(0, white)
-        l2.set_pwm(0, red)
-        l2.set_pwm(0, red)
+        l2.set_pwm(1, white)
+        l2.set_pwm(2, red)
+        l2.set_pwm(3, red)
     print(f"Setting device '{device}' - Red: {red}%, White: {white}%")
 
 # Perform measurements for a point
