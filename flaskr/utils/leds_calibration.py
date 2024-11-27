@@ -147,8 +147,10 @@ def measure(point, stand, start_red, start_white):
 @click.option("--stand", required=True, type=click.Choice(['exp', 'ctrl']), help="Stand type (exp or ctrl).")
 def add(point, red, white, ppfd, stand):
     "Add a single measurement to the database."
+    set_duty(red, white, stand)
     add_measurement(point, red, white, ppfd, stand)
     click.echo(f"Measurement added for point={point}, red={red}%, white={white}%, ppfd={ppfd}, stand={stand}.")
+    set_duty(0, 0, stand)
 
 @cli.command()
 @click.option("--step", default=10, type=int, help="New step size for PWM duty cycle.")
