@@ -1,7 +1,5 @@
 import os
 import redis
-import rq
-import rq_dashboard
 from flask import Flask, render_template, jsonify, request
 from . import db
 from . import hardware

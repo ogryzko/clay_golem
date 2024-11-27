@@ -1,6 +1,6 @@
 venv/
 logs/
-
+*.db
 *.pyc
 __pycache__/
 

@@ -5,7 +5,8 @@ from flaskr.drivers.pwm_lamp_driver import PWMLampDriver
 
 #print(os.getcwd())
 
-l1 = PWMLampDriver("10.10.0.14", "lamp1")
+l1 = PWMLampDriver("10.10.0.15", "exp_lamp")
+l2 = PWMLampDriver("10.10.0.16", "ctrl_lamp")
 
 import sqlite3
 import click
@@ -74,11 +75,15 @@ def set_duty(red, white, device):
     global l1
     if device == "exp":
         l1.set_pwm(0, white)
+        l1.set_pwm(1, white)
+        l1.set_pwm(0, red)
         l1.set_pwm(1, red)
 
     elif device == "ctr":
-        l1.set_pwm(0, white)
-        l1.set_pwm(1, red)
+        l2.set_pwm(0, white)
+        l2.set_pwm(0, white)
+        l2.set_pwm(0, red)
+        l2.set_pwm(0, red)
     print(f"Setting device '{device}' - Red: {red}%, White: {white}%")
 
 # Perform measurements for a point
