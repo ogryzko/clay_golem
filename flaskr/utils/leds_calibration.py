@@ -143,7 +143,6 @@ def measure(point, stand, start_red, start_white):
 @click.option("--point", required=True, type=int, help="Point number for measurements.")
 @click.option("--red", required=True, type=int, help="Red light duty cycle (0-100%).")
 @click.option("--white", required=True, type=int, help="White light duty cycle (0-100%).")
-@click.option("--ppfd", required=True, type=float, help="Quantum meter reading.")
 @click.option("--stand", required=True, type=click.Choice(['exp', 'ctrl']), help="Stand type (exp or ctrl).")
 def add(point, red, white, ppfd, stand):
     "Add a single measurement to the database."
@@ -154,7 +153,7 @@ def add(point, red, white, ppfd, stand):
     else:
         ppfd = float(user_input)
         add_measurement(point, red, 0, ppfd, stand)
-    click.echo(f"Measurement added for point={point}, red={red}%, white={white}%, ppfd={ppfd}, stand={stand}.")
+        click.echo(f"Measurement added for point={point}, red={red}%, white={white}%, ppfd={ppfd}, stand={stand}.")
     set_duty(0, 0, stand)
 
 @cli.command()
