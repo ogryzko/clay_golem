@@ -152,7 +152,7 @@ def add(point, red, white, stand):
         print(f"Skipping red={red}%, white={white}%.")
     else:
         ppfd = float(user_input)
-        add_measurement(point, red, 0, ppfd, stand)
+        add_measurement(point, red, white, ppfd, stand)
         click.echo(f"Measurement added for point={point}, red={red}%, white={white}%, ppfd={ppfd}, stand={stand}.")
     set_duty(0, 0, stand)
 
