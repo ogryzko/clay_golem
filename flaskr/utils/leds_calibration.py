@@ -144,7 +144,7 @@ def measure(point, stand, start_red, start_white):
 @click.option("--red", required=True, type=int, help="Red light duty cycle (0-100%).")
 @click.option("--white", required=True, type=int, help="White light duty cycle (0-100%).")
 @click.option("--stand", required=True, type=click.Choice(['exp', 'ctrl']), help="Stand type (exp or ctrl).")
-def add(point, red, white, ppfd, stand):
+def add(point, red, white, stand):
     "Add a single measurement to the database."
     set_duty(red, white, stand)
     user_input = input(f"Enter quantum meter reading for red={red}%, white=0% (or press Enter to skip): ")
