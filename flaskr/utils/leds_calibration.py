@@ -149,7 +149,7 @@ def add(point, red, white, stand):
     set_duty(red, white, stand)
     user_input = input(f"Enter quantum meter reading for red={red}%, white=0% (or press Enter to skip): ")
     if user_input.strip() == "":
-        print(f"Skipping red={red}%, white=0%.")
+        print(f"Skipping red={red}%, white={white}%.")
     else:
         ppfd = float(user_input)
         add_measurement(point, red, 0, ppfd, stand)
