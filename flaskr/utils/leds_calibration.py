@@ -147,7 +147,7 @@ def measure(point, stand, start_red, start_white):
 def add(point, red, white, stand):
     "Add a single measurement to the database."
     set_duty(red, white, stand)
-    user_input = input(f"Enter quantum meter reading for red={red}%, white=0% (or press Enter to skip): ")
+    user_input = input(f"Enter quantum meter reading for red={red}%, white={white}% (or press Enter to skip): ")
     if user_input.strip() == "":
         print(f"Skipping red={red}%, white={white}%.")
     else:
