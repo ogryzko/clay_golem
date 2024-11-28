@@ -80,7 +80,7 @@ def set_duty(red, white, device):
         l1.set_pwm(2, red)
         l1.set_pwm(3, red)
 
-    elif device == "ctr":
+    elif device == "ctrl":
         l2.set_pwm(0, white)
         l2.set_pwm(1, white)
         l2.set_pwm(2, red)
