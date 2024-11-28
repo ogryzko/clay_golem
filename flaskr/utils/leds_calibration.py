@@ -73,6 +73,7 @@ def add_measurement(point, red, white, ppfd, stand):
 # Mock function to set duty cycles
 def set_duty(red, white, device):
     global l1
+    global l2
     if device == "exp":
         l1.set_pwm(0, white)
         l1.set_pwm(1, white)
