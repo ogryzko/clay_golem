@@ -5,7 +5,8 @@ from flaskr.drivers.pwm_lamp_driver import PWMLampDriver
 
 #print(os.getcwd())
 
-l1 = PWMLampDriver("10.10.0.14", "lamp1")
+l1 = PWMLampDriver("10.10.0.15", "exp_lamp")
+l2 = PWMLampDriver("10.10.0.16", "ctrl_lamp")
 
 import sqlite3
 import click
@@ -72,13 +73,18 @@ def add_measurement(point, red, white, ppfd, stand):
 # Mock function to set duty cycles
 def set_duty(red, white, device):
     global l1
+    global l2
     if device == "exp":
         l1.set_pwm(0, white)
-        l1.set_pwm(1, red)
+        l1.set_pwm(1, white)
+        l1.set_pwm(2, red)
+        l1.set_pwm(3, red)
 
-    elif device == "ctr":
-        l1.set_pwm(0, white)
-        l1.set_pwm(1, red)
+    elif device == "ctrl":
+        l2.set_pwm(0, white)
+        l2.set_pwm(1, white)
+        l2.set_pwm(2, red)
+        l2.set_pwm(3, red)
     print(f"Setting device '{device}' - Red: {red}%, White: {white}%")
 
 # Perform measurements for a point
@@ -138,12 +144,18 @@ def measure(point, stand, start_red, start_white):
 @click.option("--point", required=True, type=int, help="Point number for measurements.")
 @click.option("--red", required=True, type=int, help="Red light duty cycle (0-100%).")
 @click.option("--white", required=True, type=int, help="White light duty cycle (0-100%).")
-@click.option("--ppfd", required=True, type=float, help="Quantum meter reading.")
 @click.option("--stand", required=True, type=click.Choice(['exp', 'ctrl']), help="Stand type (exp or ctrl).")
-def add(point, red, white, ppfd, stand):
+def add(point, red, white, stand):
     "Add a single measurement to the database."
-    add_measurement(point, red, white, ppfd, stand)
-    click.echo(f"Measurement added for point={point}, red={red}%, white={white}%, ppfd={ppfd}, stand={stand}.")
+    set_duty(red, white, stand)
+    user_input = input(f"Enter quantum meter reading for red={red}%, white={white}% (or press Enter to skip): ")
+    if user_input.strip() == "":
+        print(f"Skipping red={red}%, white={white}%.")
+    else:
+        ppfd = float(user_input)
+        add_measurement(point, red, white, ppfd, stand)
+        click.echo(f"Measurement added for point={point}, red={red}%, white={white}%, ppfd={ppfd}, stand={stand}.")
+    set_duty(0, 0, stand)
 
 @cli.command()
 @click.option("--step", default=10, type=int, help="New step size for PWM duty cycle.")
