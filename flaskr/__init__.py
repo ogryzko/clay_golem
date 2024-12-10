@@ -2,27 +2,22 @@ import os
 import redis
 from flask import Flask, render_template, jsonify, request
 from . import db
-from . import hardware
 from .tasks.data_logger_cycle import update_device_data
 from .tasks.ventilation_loop import ventilation_loop
-from .tasks.start_tasks import init_tasks
-from .systemd_handle import init_systemd_handlers
+#from .tasks.start_tasks import init_tasks
+#from .systemd_handle import init_systemd_handlers
+from .hardware.hardware import init_hardware, handle_command, get_device_states
 
 
 def create_app():
     # create and configure the app
     instance_path = os.path.join(os.getcwd(), "instance")   # finally
+    print(instance_path)
     app = Flask(__name__,  instance_path=instance_path, instance_relative_config=True)
-    # app.config["RQ_DASHBOARD_REDIS_URL"] = "redis://127.0.0.1:6379"
-
 
     # print(app.instance_path)
     res = app.config.from_pyfile('config.py')
     print(f"Keys loaded from current app config: {res}")
-    #rq_dashboard.web.setup_rq_connection(app)
-    #app.register_blueprint(rq_dashboard.blueprint, url_prefix="/rq")
-    # for key in app.config:
-    #     print(key)
 
     # a simple page that says hello
     @app.route('/hello')
@@ -32,7 +27,8 @@ def create_app():
     # main page with all controls
     @app.route('/')
     def index():
-        return render_template('index.html', devices=db.get_device_states())
+        devices = get_device_states()
+        return render_template('index.html', devices=devices)
 
     # обработчик для эксперимента
     @app.route('/handle-experiment', methods=['POST'])
@@ -54,17 +50,21 @@ def create_app():
     # handler user commands for all devices
     @app.route('/handle-request', methods=['POST'])
     def handle_request():
+        # TODO: do we need to send error responses from low-level devices to wep app ?
         try:
             # Parse the JSON data
             data = request.get_json()
 
             # Extract the device ID, command, and argument from the data
-            device_id = data.get('device_id')
-            command = data.get('command')
+            # and convert it to correct formats
+            device_id = int(data.get('device_id'))
+            command = str(data.get('command'))
             arg = data.get('arg')
+            if arg:
+                arg = int(arg)
 
-            # Handle the command (you would replace this with your actual command handling logic)
-            success = hardware.handle_command(device_id, command, arg)
+            # Handle the command
+            success = handle_command(device_id, command, arg)
 
             # Return a success response
             if success:
@@ -78,17 +78,20 @@ def create_app():
 
     @app.route('/get-device-updates')
     def get_device_updates():
-        # `device_states` is a big dictionary holding the state of each device
-        new_states = db.get_device_states()
+        # `device_states` is a big list with dictionaries holding the state of each device
+        new_states = get_device_states()
         return jsonify(new_states)
 
     # init database
     db.init_app(app)
 
+    # init hardware high level handlers
+    init_hardware()
+
     # init tasks
-    init_tasks(app)
+    #init_tasks(app)
 
     # init systemd handle cli commands
-    init_systemd_handlers(app)
+    #init_systemd_handlers(app)
 
     return app
