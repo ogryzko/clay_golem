@@ -181,9 +181,11 @@
             data: JSON.stringify({ command: command }),
             success: function(response) {
                 console.log('Команда эксперимента отправлена успешно');
+                createAlert('Success! Command has been sent successfully.', 'success')
             },
             error: function(xhr, status, error) {
                 console.error('Ошибка при отправке команды эксперимента:', error);
+                createAlert(`Error! ${response.error}`, 'danger');
             }
         });
     }
