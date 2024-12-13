@@ -245,19 +245,37 @@ class HardwareLamp(Hardware):
         if command == "reset":
             self.reset()
 
+    def set_pwm(self, color: str, pwm: int):
+        """
+        Установить значение скважности для указанного цвета.
+        Args:
+            color (str): Цвет ('red' или 'white')
+            pwm (int): Значение скважности
+        """
+        if color not in ['red', 'white']:
+            raise ValueError("Color must be 'red' or 'white'.")
+
+        # Устанавливаем значение скважности
+        self.data[f"{color}_pwm_1"] = pwm
+        self.data[f"{color}_pwm_2"] = pwm
+        self.params["status"] = "ok"  # Статус должен быть "ok"
+        self.logger.info(f"Set {color}: {pwm}")
+
+        # Устанавливаем PWM через драйвер
+        channel_mapping = {'red': [0, 1], 'white': [2, 3]}
+        for channel in channel_mapping[color]:
+            success, message = self.driver.set_pwm(channel, pwm)
+            if not success:
+                self.params["status"] = "Error"  # Устанавливаем статус как "Error"
+                self.params["last_error"] = message  # Сохраняем сообщение об ошибке
+                self.logger.warning(f"Failed to set {color} PWM on channel {channel}: {message}")
+                return  # Прерываем выполнение, если установка не удалась
+
     def set_red(self, pwm: int):
-        self.data["red_pwm_1"] = pwm
-        self.data["red_pwm_2"] = pwm
-        self.params["status"] = "ok" # must be "ok", any other statuses will be parsed as error
-        self.logger.info(f"Set red: {pwm}")
-        #self.driver.set_pwm(,pwm)
+        self.set_pwm('red', pwm)
 
     def set_white(self, pwm: int):
-        self.data["white_pwm_1"] = pwm
-        self.data["white_pwm_2"] = pwm
-        self.params["status"] = "ok"  # must be "ok", any other statuses will be parsed as error
-        self.logger.info(f"Set white: {pwm}")
-        pass
+        self.set_pwm('white', pwm)
 
     def reset(self):
         self.logger.info(f"Reset lamp")
