@@ -147,19 +147,21 @@ class HardwareRelay(Hardware):
         private method to set relay state
         """
         try:
-            # TODO: here we really make http request to device using low-level driver
-            #self.driver.set_relay_state(self.params["channel"], 1)
-            #self.params["status"] = "on"
-            #print(f"{self.params['name']} (ID: {self.params['device_id']}) is now ON.")
-            pass  # it is stubbed for now
-            self.data["state"] = 1 if state else 0
-            self.params["status"] = "ok"  # must be "ok", any other statuses will be parsed as error
-            return
+            # Устанавливаем состояние реле через драйвер
+            success, message = self.driver.set_relay_state(self.params["channel"], state)
+            
+            if success:
+                self.data["state"] = state  # Обновляем состояние в данных
+                self.params["status"] = "ok"  # Устанавливаем статус как "ok"
+                self.logger.info(f"{self.params['name']} (ID: {self.params['device_id']}) is now {'ON' if state else 'OFF'}.")
+            else:
+                self.logger.warning(f"Failed to set relay state: {message}")
+                self.params["status"] = "Error"  # Устанавливаем статус как "Error"
+                self.params["last_error"] = message  # Сохраняем сообщение об ошибке
         except Exception as e:
             self.logger.error(e)
             self.params["last_error"] = str(e)
-            self.params["status"] = "Error"
-            pass
+            self.params["status"] = "Error"  # Устанавливаем статус как "Error"
 
 
     def turn_on(self):
