@@ -159,6 +159,7 @@ class HardwareRelay(Hardware):
                 self.params["status"] = "Error"  # Устанавливаем статус как "Error"
                 self.params["last_error"] = message  # Сохраняем сообщение об ошибке
         except Exception as e:
+            #TODO а так вообще бывает?
             self.logger.error(e)
             self.params["last_error"] = str(e)
             self.params["status"] = "Error"  # Устанавливаем статус как "Error"
@@ -176,9 +177,16 @@ class HardwareRelay(Hardware):
         self._set_relay_state(0)
 
     def reset(self):
-        """Software way to reset device"""
-        self.logger.info("Reset relay")
-        pass
+        """Сбросить устройство"""
+        self.logger.info("Resetting relay...")
+        success = self.driver.reset_device()  # Вызов метода reset_device у драйвера
+
+        if success:
+            self.params["status"] = "ok"  # Устанавливаем статус как "ok"
+            self.logger.info(f"{self.params['name']} (ID: {self.params['device_id']}) has been reset successfully.")
+        else:
+            self.params["status"] = "Error"  # Устанавливаем статус как "Error"
+            self.logger.warning(f"Failed to reset {self.params['name']} (ID: {self.params['device_id']}).")
 
 class HardwareLamp(Hardware):
     """
@@ -242,7 +250,7 @@ class HardwareLamp(Hardware):
         self.data["red_pwm_2"] = pwm
         self.params["status"] = "ok" # must be "ok", any other statuses will be parsed as error
         self.logger.info(f"Set red: {pwm}")
-        pass
+        #self.driver.set_pwm(,pwm)
 
     def set_white(self, pwm: int):
         self.data["white_pwm_1"] = pwm
@@ -253,7 +261,21 @@ class HardwareLamp(Hardware):
 
     def reset(self):
         self.logger.info(f"Reset lamp")
-        pass
+        
+        try:
+            success, message = self.driver.reset_device() 
+            if success:
+                self.params["status"] = "ok"  # Устанавливаем статус как "ok"
+                self.logger.info(f"{self.params['name']} (ID: {self.params['device_id']}) has been reset successfully.")
+            else:
+                self.params["status"] = "Error"  # Устанавливаем статус как "Error"
+                self.logger.warning(f"Failed to reset {self.params['name']} (ID: {self.params['device_id']}). Message: {message}")
+                self.params["last_error"] = message
+        except Exception as e:
+                self.logger.error(e)
+                self.params["last_error"] = str(e)
+                self.params["status"] = "Error"  # Устанавливаем статус как "Error"
+
 
     def get_info(self):
         """
