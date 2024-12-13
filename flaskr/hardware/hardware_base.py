@@ -262,7 +262,7 @@ class HardwareLamp(Hardware):
         self.logger.info(f"Set {color}: {pwm}")
 
         # Устанавливаем PWM через драйвер
-        channel_mapping = {'red': [0, 1], 'white': [2, 3]}
+        channel_mapping = {'red': [2, 3], 'white': [0, 1]}
         for channel in channel_mapping[color]:
             success, message = self.driver.set_pwm(channel, pwm)
             if not success:
