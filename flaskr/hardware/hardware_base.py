@@ -40,23 +40,30 @@ class Hardware(ABC):
         """
         pass
 
-    @classmethod
-    def from_dict(cls: Type[T], data: Dict) -> T:
-        """Create object from a dictionary representation."""
-        # TODO: change to be more abstract
-        instance = cls(
-            device_id=data["params"]["device_id"],
-            name=data["params"]["name"],
-            last_time_active=data["params"]["last_time_active"],
-            dev_type=data["params"]["dev_type"],
-            uptime_sec=data["params"]["uptime_sec"],
-            description=data["params"]["description"],
-            status=data["params"]["status"],
-            last_error=data["params"]["last_error"],
-        )
-        instance.commands = data.get("commands", {})
-        instance.data = data.get("data", {})
-        return instance
+    @abstractmethod
+    def get_info(self):
+        """
+        get info about state of that particular device
+        """
+        pass
+
+    # @classmethod
+    # def from_dict(cls: Type[T], data: Dict) -> T:
+    #     """Create object from a dictionary representation."""
+    #     # TODO: change to be more abstract
+    #     instance = cls(
+    #         device_id=data["params"]["device_id"],
+    #         name=data["params"]["name"],
+    #         last_time_active=data["params"]["last_time_active"],
+    #         dev_type=data["params"]["dev_type"],
+    #         uptime_sec=data["params"]["uptime_sec"],
+    #         description=data["params"]["description"],
+    #         status=data["params"]["status"],
+    #         last_error=data["params"]["last_error"],
+    #     )
+    #     instance.commands = data.get("commands", {})
+    #     instance.data = data.get("data", {})
+    #     return instance
 
     def __repr__(self):
         return f"({json.dumps(self.to_dict(), indent=2)})"
@@ -89,8 +96,9 @@ class HardwareRelay(Hardware):
             device_id=device_id,
             name=name
         )
+        # it is params, and user cannot change them directly
         self.params["last_time_active"] = last_time_active
-        self.params["type"] = type
+        self.params["type"]= type
         self.params["uptime_sec"] = uptime_sec
         self.params["description"] = description
         self.params["status"] = status
@@ -100,8 +108,9 @@ class HardwareRelay(Hardware):
         # let`s set commands to represent them on web-page
         self.commands["set_on"] = None
         self.commands["set_off"] = None
+        self.commands["reset"] = None
         # let`s set data param represent it on web-page
-        self.data["state"] = "OFF"
+        self.data["state"] = 0
         self.driver = esp32_relay_driver.ESP32RelayDriver(
             host=self.params["ip_addr"],
             name=self.params["name"]
@@ -118,6 +127,21 @@ class HardwareRelay(Hardware):
         if command == "reset":
             self.reset()
 
+    def get_info(self):
+        """
+
+        """
+        info_dict = self.driver.get_info()
+        if info_dict:
+            ch_id = "ch" + str(self.params["channel"])  # to get str like ch0 or ch2
+            self.data["state"] = info_dict[ch_id]
+            self.params["uptime"] = info_dict["uptime"]
+            self.params["last_time_active"] = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+            self.params["status"] = "ok"
+            return True
+        else:
+            return False
+
     def _set_relay_state(self, state: int):
         """
         private method to set relay state
@@ -128,7 +152,7 @@ class HardwareRelay(Hardware):
             #self.params["status"] = "on"
             #print(f"{self.params['name']} (ID: {self.params['device_id']}) is now ON.")
             pass  # it is stubbed for now
-            self.data["state"] = "ON" if state else "OFF"
+            self.data["state"] = 1 if state else 0
             self.params["status"] = "ok"  # must be "ok", any other statuses will be parsed as error
             return
         except Exception as e:
@@ -175,6 +199,7 @@ class HardwareLamp(Hardware):
             device_id=device_id,
             name=name,
         )
+        # params will not change
         self.params["last_time_active"] = last_time_active
         self.params["type"] = type
         self.params["uptime_sec"] = uptime_sec
@@ -182,13 +207,22 @@ class HardwareLamp(Hardware):
         self.params["status"] = status
         self.params["last_error"] = last_error
         self.params["ip_addr"] = ip_addr
-        # let`s set data param represent it on web-page
-        self.data["red_pwm"] = 0
-        self.data["white_pwm"] = 0
+        # let`s set data to represent it on web-page
+        # data will change everytime
+        self.data["red_pwm_1"] = 0
+        self.data["red_pwm_2"] = 0
+        self.data["white_pwm_1"] = 0
+        self.data["white_pwm_2"] = 0
+        self.data["driver_temp"] = 0
         # let`s set commands to represent them on web-page
         self.commands["set_red"] = "int"
         self.commands["set_white"] = "int"
         self.commands["reset"] = None
+        # let`s create driver that makes http requests to real device
+        self.driver = pwm_lamp_driver.PWMLampDriver(
+            host = self.params["ip_addr"],
+            name = self.params["name"]
+        )
 
     def run_command(self, command, arg):
         """
@@ -202,13 +236,15 @@ class HardwareLamp(Hardware):
             self.reset()
 
     def set_red(self, pwm: int):
-        self.data["red_pwm"] = pwm
+        self.data["red_pwm_1"] = pwm
+        self.data["red_pwm_2"] = pwm
         self.params["status"] = "ok" # must be "ok", any other statuses will be parsed as error
         self.logger.info(f"Set red: {pwm}")
         pass
 
     def set_white(self, pwm: int):
-        self.data["white_pwm"] = pwm
+        self.data["white_pwm_1"] = pwm
+        self.data["white_pwm_2"] = pwm
         self.params["status"] = "ok"  # must be "ok", any other statuses will be parsed as error
         self.logger.info(f"Set white: {pwm}")
         pass
@@ -216,6 +252,25 @@ class HardwareLamp(Hardware):
     def reset(self):
         self.logger.info(f"Reset lamp")
         pass
+
+    def get_info(self):
+        """
+
+        """
+        info_dict = self.driver.get_info()
+        if info_dict:
+            self.data["white_pwm_1"] = info_dict["ch0_pwm"]
+            self.data["white_pwm_2"] = info_dict["ch1_pwm"]
+            self.data["red_pwm_1"] = info_dict["ch2_pwm"]
+            self.data["red_pwm_2"] = info_dict["ch3_pwm"]
+            self.data["driver_temp"] = info_dict["pcb_temp"]
+            self.params["uptime"] = info_dict["uptime"]
+            self.params["last_time_active"] = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+            self.params["status"] = "ok"
+            return True
+        else:
+            self.params["status"] = "error"
+            return False
 
 
 class HardwareSBA5(Hardware):

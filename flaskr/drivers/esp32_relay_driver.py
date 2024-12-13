@@ -23,6 +23,7 @@ class ESP32RelayDriver(BaseDriver):
             self.logger.debug(f"Got info response: {response.json()}")
             if response.status_code == 200:
                 return response.json()
+                # it returns giant dict, see https://github.com/houseofbigseals/esp32_relay
             self.logger.warning(f"Unexpected status code: {response.status_code}")
         except Exception as e:
             self.logger.error(f"Error getting info: {str(e)}")
