@@ -147,19 +147,22 @@ class HardwareRelay(Hardware):
         private method to set relay state
         """
         try:
-            # TODO: here we really make http request to device using low-level driver
-            #self.driver.set_relay_state(self.params["channel"], 1)
-            #self.params["status"] = "on"
-            #print(f"{self.params['name']} (ID: {self.params['device_id']}) is now ON.")
-            pass  # it is stubbed for now
-            self.data["state"] = 1 if state else 0
-            self.params["status"] = "ok"  # must be "ok", any other statuses will be parsed as error
-            return
+            # Устанавливаем состояние реле через драйвер
+            success, message = self.driver.set_relay_state(self.params["channel"], state)
+            
+            if success:
+                self.data["state"] = state  # Обновляем состояние в данных
+                self.params["status"] = "ok"  # Устанавливаем статус как "ok"
+                self.logger.info(f"{self.params['name']} (ID: {self.params['device_id']}) is now {'ON' if state else 'OFF'}.")
+            else:
+                self.logger.warning(f"Failed to set relay state: {message}")
+                self.params["status"] = "Error"  # Устанавливаем статус как "Error"
+                self.params["last_error"] = message  # Сохраняем сообщение об ошибке
         except Exception as e:
+            #TODO а так вообще бывает?
             self.logger.error(e)
             self.params["last_error"] = str(e)
-            self.params["status"] = "Error"
-            pass
+            self.params["status"] = "Error"  # Устанавливаем статус как "Error"
 
 
     def turn_on(self):
@@ -174,9 +177,16 @@ class HardwareRelay(Hardware):
         self._set_relay_state(0)
 
     def reset(self):
-        """Software way to reset device"""
-        self.logger.info("Reset relay")
-        pass
+        """Сбросить устройство"""
+        self.logger.info("Resetting relay...")
+        success = self.driver.reset_device()  # Вызов метода reset_device у драйвера
+
+        if success:
+            self.params["status"] = "ok"  # Устанавливаем статус как "ok"
+            self.logger.info(f"{self.params['name']} (ID: {self.params['device_id']}) has been reset successfully.")
+        else:
+            self.params["status"] = "Error"  # Устанавливаем статус как "Error"
+            self.logger.warning(f"Failed to reset {self.params['name']} (ID: {self.params['device_id']}).")
 
 class HardwareLamp(Hardware):
     """
@@ -235,23 +245,55 @@ class HardwareLamp(Hardware):
         if command == "reset":
             self.reset()
 
+    def set_pwm(self, color: str, pwm: int):
+        """
+        Установить значение скважности для указанного цвета.
+        Args:
+            color (str): Цвет ('red' или 'white')
+            pwm (int): Значение скважности
+        """
+        if color not in ['red', 'white']:
+            raise ValueError("Color must be 'red' or 'white'.")
+
+        # Устанавливаем значение скважности
+        self.data[f"{color}_pwm_1"] = pwm
+        self.data[f"{color}_pwm_2"] = pwm
+        self.params["status"] = "ok"  # Статус должен быть "ok"
+        self.logger.info(f"Set {color}: {pwm}")
+
+        # Устанавливаем PWM через драйвер
+        channel_mapping = {'red': [2, 3], 'white': [0, 1]}
+        for channel in channel_mapping[color]:
+            success, message = self.driver.set_pwm(channel, pwm)
+            if not success:
+                self.params["status"] = "Error"  # Устанавливаем статус как "Error"
+                self.params["last_error"] = message  # Сохраняем сообщение об ошибке
+                self.logger.warning(f"Failed to set {color} PWM on channel {channel}: {message}")
+                return  # Прерываем выполнение, если установка не удалась
+
     def set_red(self, pwm: int):
-        self.data["red_pwm_1"] = pwm
-        self.data["red_pwm_2"] = pwm
-        self.params["status"] = "ok" # must be "ok", any other statuses will be parsed as error
-        self.logger.info(f"Set red: {pwm}")
-        pass
+        self.set_pwm('red', pwm)
 
     def set_white(self, pwm: int):
-        self.data["white_pwm_1"] = pwm
-        self.data["white_pwm_2"] = pwm
-        self.params["status"] = "ok"  # must be "ok", any other statuses will be parsed as error
-        self.logger.info(f"Set white: {pwm}")
-        pass
+        self.set_pwm('white', pwm)
 
     def reset(self):
         self.logger.info(f"Reset lamp")
-        pass
+        
+        try:
+            success, message = self.driver.reset_device() 
+            if success:
+                self.params["status"] = "ok"  # Устанавливаем статус как "ok"
+                self.logger.info(f"{self.params['name']} (ID: {self.params['device_id']}) has been reset successfully.")
+            else:
+                self.params["status"] = "Error"  # Устанавливаем статус как "Error"
+                self.logger.warning(f"Failed to reset {self.params['name']} (ID: {self.params['device_id']}). Message: {message}")
+                self.params["last_error"] = message
+        except Exception as e:
+                self.logger.error(e)
+                self.params["last_error"] = str(e)
+                self.params["status"] = "Error"  # Устанавливаем статус как "Error"
+
 
     def get_info(self):
         """
