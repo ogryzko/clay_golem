@@ -1,27 +1,30 @@
+from datetime import datetime
+
 import redis
 import click
 from flask import current_app, g
 import sqlite3
 from sqlite3 import Error
+from datetime import datetime
 
 
-# TODO: move it to hardware collection
-def get_device_states():
-    """method to update flask web page data from db"""
-    # lets load all devices data from redis hashes
-    red = get_db()
-    reconstructed_devices = []
-    for device_dict in current_app.config['DEVICES']:
-        # to get needed names
-        dev_id = device_dict["params"]["device_id"]
-        recon_device = {}   # updated dict
-        # update device params from redis
-        for key in device_dict.keys():
-            hash_name = f"device_{dev_id}:{key}"
-            recon_device[key] = red.hgetall(hash_name)
-        # load it to updated list
-        reconstructed_devices.append(recon_device)
-    return reconstructed_devices
+# # TODO: move it to hardware collection
+# def get_device_states():
+#     """method to update flask web page data from db"""
+#     # lets load all devices data from redis hashes
+#     red = get_db()
+#     reconstructed_devices = []
+#     for device_dict in current_app.config['DEVICES']:
+#         # to get needed names
+#         dev_id = device_dict["params"]["device_id"]
+#         recon_device = {}   # updated dict
+#         # update device params from redis
+#         for key in device_dict.keys():
+#             hash_name = f"device_{dev_id}:{key}"
+#             recon_device[key] = red.hgetall(hash_name)
+#         # load it to updated list
+#         reconstructed_devices.append(recon_device)
+#     return reconstructed_devices
 
 
 def get_db():
