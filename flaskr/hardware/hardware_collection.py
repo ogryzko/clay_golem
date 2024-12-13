@@ -1,4 +1,6 @@
 import json
+from datetime import  datetime
+import sqlite3
 import redis
 from typing import List, Dict, Type, TypeVar, Union
 from flaskr.hardware.hardware_base import Hardware, HardwareRelay, HardwareLamp, HardwareSBA5, HardwareHumSensor, HardwareTempSensor
@@ -27,19 +29,62 @@ class HardwareCollection:
                 # so after 10 second some stupid instance can update all operational data to default values
                 # that`s the life
                 # so
-                self.logger.info("we are the first flask instance and we need to store our hardware params")
+                self.logger.info("we are the first flask instance, we need to store hardware params to redis")
                 self.store_hardware_description_to_redis()
+                # also lets create tables in sqlite db
+                data_db_path = current_app.instance_path + "/" + current_app.config['DATA_DB_NAME']
+                data_db =   g.data_db = sqlite3.connect(data_db_path, detect_types=sqlite3.PARSE_DECLTYPES)
+                cursor = data_db.cursor()
+                print(data_db)
+
+                for device_id in self.hardware:
+                    for d in self.hardware[device_id].data:
+                        table_name = f"device_{device_id}_{d}"
+                        cursor.execute(f"""
+                                CREATE TABLE IF NOT EXISTS {table_name} (
+                                    num INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    datetime TIMESTAMP,
+                                    value REAL
+                                )
+                            """)
+                        self.logger.info(f"added sqlite table for device_{device_id}_{d}")
+                data_db.commit()
+                data_db.close()
             else:
                 self.logger.info("we are NOT the first flask instance,so just load data from db")
                 self.load_hardware_description_from_redis()
 
-    def add(self, hardware: Hardware):
-        """Add a hardware object to the collection."""
-        self.hardware[hardware.params["device_id"]] = hardware
+    def save_measurement_to_sqlite(self, device_id):
+        """
+        Insert a measurement into the table corresponding to a device.
+        """
+
+        data_db_path = current_app.instance_path + "/" + current_app.config['DATA_DB_NAME']
+        data_db = g.data_db = sqlite3.connect(data_db_path, detect_types=sqlite3.PARSE_DECLTYPES)
+        cursor = data_db.cursor()
+        for d in self.hardware[device_id].data:
+            table_name = f"device_{device_id}_{d}"
+            measured_value = self.hardware[device_id].data[d]
+
+            current_datetime = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+
+            cursor.execute(f"""
+                INSERT INTO {table_name} (datetime, value)
+                VALUES (?, ?)
+            """, (current_datetime, measured_value))
+            self.logger.debug(f"loaded {measured_value} to table device_{device_id}_{d}")
+            data_db.commit()
+
+        data_db.close()
+
 
     def length(self):
         """ Returns number of devices in collection"""
         return len(self.hardware)
+
+    def add(self, hardware: Hardware):
+        """Add a hardware object to the collection."""
+        self.hardware[hardware.params["device_id"]] = hardware
 
     def remove(self, hardware_id: int):
         """Remove a hardware object from the collection."""
@@ -60,10 +105,10 @@ class HardwareCollection:
          that method can be long, so call it in different thread
         """
         for h_id in self.hardware:
-            self.hardware[h_id].get_info()
-            self.logger.debug(self.hardware[h_id].to_dict())
-            self.store_one_device_update_to_redis(h_id)
-        #self.store_hardware_description_to_redis()
+            if self.hardware[h_id].get_info():  # that can be very slow
+                self.logger.debug(self.hardware[h_id].to_dict())
+                self.store_one_device_update_to_redis(h_id)
+                self.save_measurement_to_sqlite(h_id)
 
     def store_one_device_update_to_redis(self, dev_id):
         """ just store state of device with dev_id to redis"""

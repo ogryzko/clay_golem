@@ -16,10 +16,6 @@ def init_hardware(app):
     """
     print("INIT HARDWARE")
 
-
-    # TODO: read data from redis
-    # TODO: if there are no data in redis, then create that data in default way and set in redis "hardware lock" on
-
     # for now just stubs
     lamp0 = HardwareLamp(
         device_id=100,
@@ -50,7 +46,7 @@ def init_hardware(app):
         channel=3,
         ip_addr="10.10.0.18"
     )
-    # is dependency injection is cool?
+
     with app.app_context():
         current_app.global_hardware_collection = HardwareCollection(
             app,
@@ -84,6 +80,8 @@ def handle_command(device_id: int, command: str, arg: Any):
         device = current_app.global_hardware_collection.get(int(device_id))
         device.run_command(command, arg=arg)
         current_app.global_hardware_collection.store_one_device_update_to_redis(device_id)
+        # TODO: remove sqlite writing here, we will write to sqlite only when state update polling
+        current_app.global_hardware_collection.save_measurement_to_sqlite(device_id)
         return True
 
 def get_device_states():

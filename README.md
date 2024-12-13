@@ -24,16 +24,9 @@ the state of the devices using data from the database.
 Due to this, you can run as many flask processes as you
 like in parallel.
 
-The backend is implemented using the
-redis-queue framework. When a user clicks on a button
-on a web page, the javascript creates a request to the
-server, the server processes it and creates a task in
-the redis-queue. The server itself does not have any 
-access to the hardware; it only creates tasks and waits
-for them to be completed. Redis-queue workers perform
-tasks from the queue and directly interact with the 
-equipment. They are handled through 
-systemd services, and can work without web-page launched.
+#### Installation way
+To make system works, you have to install app STRICTLY in /opt/clay/clay_golem
+This path is hardcoded inside app and if you change it, everything will fail.
 
 #### Frontend
 We are using AJAX polling from user browser to server 
@@ -43,6 +36,27 @@ migrate to web-sockets technology.
 All js scripts stored in flaskr/templates folder. They are very simple
 
 #### Backend
+
+
+#### Logging
+Now logging works using python util, and all logs will come in /opt/clay/clay_golem/flaskr/logs folder.  
+Every day script creates new files info_YYYY_MM_DD, error_YYYY_MM_DD, warning_YYYY_MM_DD etc.
+This is to separate verbose logging like debug from error logs, those can be critical to find.
+
+#### Data handling
+We have two databases, redis and sqlite. Redis installed system-wide, sqlite lives in /opt/clay/clay_golem/flaskr/instance  
+Redis stores only operational data, current parameters of each device. Different flask instances update their states and 
+send info through redis. Also background tasks, spawned by flask, controlled by reading redis.
+Experiment data stored in sqlite table, and we need to clean sqlite tables before each experiment.
+Each device has own id, defined by hardware configuration file, and for each we have table named device_{id}_{data_type}. 
+For each type of data that device handle, we have own small table.
+Each row of that table is one measurement, and consists of num, date, time, value. Just it.  
+
+We store data in sqlite in two situations: if user directly changed state of device and our flask instance registered it.
+And if automation script made some operation - it writes data changing by itself.
+
+#### Config and hardware configuration
+
 
 
 ### Installation

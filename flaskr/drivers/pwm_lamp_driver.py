@@ -19,7 +19,7 @@ class PWMLampDriver(BaseDriver):
             self.logger.debug(f"Got info response: {response.json()}")
             return response.json()
         except Exception as e:
-            self.logger.error(f"Error getting info: {str(e)}")
+            self.logger.error(f"Error getting info: {str(e)}", exc_info=True)
             return None
     
     def set_pwm(self, channel: int, duty: int) -> Tuple[bool, str]:
@@ -70,7 +70,7 @@ class PWMLampDriver(BaseDriver):
             return False, result
             
         except Exception as e:
-            self.logger.error(f"Error setting PWM: {str(e)}")
+            self.logger.error(f"Error setting PWM: {str(e)}", exc_info=True)
             return False, f"Ошибка запроса: {str(e)}"
     
     def reset_device(self) -> Tuple[bool, str]:
@@ -98,7 +98,7 @@ class PWMLampDriver(BaseDriver):
             return False, result
             
         except Exception as e:
-            self.logger.error(f"Error during device reset: {str(e)}")
+            self.logger.error(f"Error during device reset: {str(e)}", exc_info=True)
             return False, f"Ошибка запроса: {str(e)}" 
 
 

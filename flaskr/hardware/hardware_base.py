@@ -273,13 +273,14 @@ class HardwareLamp(Hardware):
             return False
 
 
-class HardwareSBA5(Hardware):
-    pass
 
 class HardwareHumSensor(Hardware):
     pass
 
 class HardwareTempSensor(Hardware):
+    pass
+
+class HardwareSBA5(Hardware):
     pass
 
 
