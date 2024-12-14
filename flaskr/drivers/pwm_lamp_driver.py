@@ -15,7 +15,7 @@ class PWMLampDriver(BaseDriver):
     def get_info(self) -> Optional[Dict]:
         """Получение информации о состоянии всех каналов и температуре"""
         try:
-            response = requests.get(f"{self.base_url}/info")
+            response = requests.get(f"{self.base_url}/info", timeout=5)
             self.logger.debug(f"Got info response: {response.json()}")
             return response.json()
         except Exception as e:
@@ -58,7 +58,8 @@ class PWMLampDriver(BaseDriver):
             response = requests.post(
                 f"{self.base_url}/pwm",
                 headers=headers,
-                data=json.dumps(data)
+                data=json.dumps(data),
+                timeout=5
             )
             
             result = response.text.strip()
@@ -87,7 +88,8 @@ class PWMLampDriver(BaseDriver):
             response: requests.Response = requests.post(
                 f"{self.base_url}/reset",
                 headers=headers,
-                data='force_reset'
+                data='force_reset',
+                timeout=5
             )
             result: str = response.text.strip()
             

@@ -54,7 +54,7 @@ def fetch_and_plot_data(db_name, tables, start_datetime, end_datetime):
                 times, values = zip(*[(datetime.strptime(row[0], "%d-%m-%Y %H:%M:%S"), row[1]) for row in rows])
                 ax = axes[idx]
                 unit = infer_unit_from_table_name(table_name)
-                ax.plot(times, values, label=f"device_{table_name.split('_')[1]} ({unit})", color=color_map(idx % 10))
+                ax.plot(times, values, '-o', label=f"device_{table_name.split('_')[1]} ({unit})", color=color_map(idx % 10))
                 ax.set_ylabel(unit)
                 ax.legend(loc="upper left")
                 ax.grid(True)
@@ -95,8 +95,9 @@ if __name__ == "__main__":
     db_name = "/opt/clay/clay_golem/instance/data.sqlite"
     start_datetime = "01-12-2024 00:00:00"
     end_datetime = "15-12-2024 23:59:59"
-    tables = ['device_100_red_pwm_2', 'device_100_white_pwm_2', 'device_100_driver_temp', 'device_101_state', 'device_102_state',
-              'device_103_state', 'device_104_state']
+    # tables = ['device_100_red_pwm_2', 'device_100_white_pwm_2', 'device_101_state', 'device_102_state',
+    #           'device_103_state', 'device_104_state']
+    tables = ['device_100_red_pwm_2', 'device_100_white_pwm_2', 'device_105_temp', 'device_106_temp', 'device_107_temp', 'device_108_temp', 'device_109_temp']
     # Fetch data and plot
     # data = fetch_data_for_plot(db_name, device_ids, start_datetime, end_datetime)
     # plot_data(data, device_ids)

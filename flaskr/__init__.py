@@ -101,6 +101,9 @@ def create_app():
         # TASK_LOCK_KEY = "state_update_worker"
         # TASK_PID_KEY = "state_update_worker_pid"
         # redis_client.delete(COMMAND_KEY, COMMAND_ARGS_KEY, TASK_LOCK_KEY, TASK_PID_KEY)
+
+    # start data updating thread
+    # TODO: make one thread for each device? It will make updating much faster
     thread = threading.Thread(target=state_update_worker, args=(app_context,), daemon=True)
     thread.start()
 

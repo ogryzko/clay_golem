@@ -3,14 +3,14 @@ from datetime import  datetime
 import sqlite3
 import redis
 from typing import List, Dict, Type, TypeVar, Union
-from flaskr.hardware.hardware_base import Hardware, HardwareRelay, HardwareLamp, HardwareSBA5, HardwareHumSensor, HardwareTempSensor
+from flaskr.hardware.hardware_base import Hardware, HardwareRelay, HardwareLamp, HardwareSBA5, HardwareSensorOnRelayBoard
 from flask import current_app, g
-from flaskr.db import get_db, get_data_db
+from flaskr.db import get_db, get_data_db, clear_db
 from flaskr.utils.logger import Logger
 
 class HardwareCollection:
     """
-
+    That is a class container for hardware devices, that can work with redis and sqlite
     """
 
     def __init__(self, app, hardware_dict: Dict[int, Hardware]=None):
@@ -30,10 +30,11 @@ class HardwareCollection:
                 # that`s the life
                 # so
                 self.logger.info("we are the first flask instance, we need to store hardware params to redis")
+
                 self.store_hardware_description_to_redis()
                 # also lets create tables in sqlite db
                 data_db_path = current_app.instance_path + "/" + current_app.config['DATA_DB_NAME']
-                data_db =   g.data_db = sqlite3.connect(data_db_path, detect_types=sqlite3.PARSE_DECLTYPES)
+                data_db =  sqlite3.connect(data_db_path, detect_types=sqlite3.PARSE_DECLTYPES)
                 cursor = data_db.cursor()
                 print(data_db)
 
@@ -60,8 +61,10 @@ class HardwareCollection:
         """
 
         data_db_path = current_app.instance_path + "/" + current_app.config['DATA_DB_NAME']
-        data_db = g.data_db = sqlite3.connect(data_db_path, detect_types=sqlite3.PARSE_DECLTYPES)
+        data_db = sqlite3.connect(data_db_path, detect_types=sqlite3.PARSE_DECLTYPES)
         cursor = data_db.cursor()
+        for d in self.hardware[device_id].data:
+            self.logger.debug(f"device_{device_id}   has  {d} data type")
         for d in self.hardware[device_id].data:
             table_name = f"device_{device_id}_{d}"
             measured_value = self.hardware[device_id].data[d]
