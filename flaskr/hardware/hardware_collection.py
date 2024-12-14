@@ -63,8 +63,8 @@ class HardwareCollection:
         data_db_path = current_app.instance_path + "/" + current_app.config['DATA_DB_NAME']
         data_db = sqlite3.connect(data_db_path, detect_types=sqlite3.PARSE_DECLTYPES)
         cursor = data_db.cursor()
-        for d in self.hardware[device_id].data:
-            self.logger.debug(f"device_{device_id}   has  {d} data type")
+        # for d in self.hardware[device_id].data:
+        #     self.logger.debug(f"device_{device_id}   has  {d} data type")
         for d in self.hardware[device_id].data:
             table_name = f"device_{device_id}_{d}"
             measured_value = self.hardware[device_id].data[d]

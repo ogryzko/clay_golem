@@ -372,8 +372,8 @@ class HardwareSensorOnRelayBoard(Hardware):
             host=self.params["ip_addr"],
             name=self.params["name"]
         )
-        for d in self.data:
-            self.logger.info(f"device {name} in family {family} has {d}")
+        # for d in self.data:
+        #     self.logger.info(f"device {name} in family {family} has {d}")
 
 
     def run_command(self, command, arg):
