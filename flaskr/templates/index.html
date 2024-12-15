@@ -103,13 +103,53 @@
     </div>
     <div class="tab-pane fade" id="experiment" role="tabpanel" aria-labelledby="experiment-tab">
         <!-- Experiment Devices or Content -->
-        <p> There will be controls for whole experiment</p>
-        {% for device in devices %}
-            {% if device.params.type == 'task' %}
-                <!--{% include 'device_block.html' %}-->
-            {% endif %}
-        {% endfor %}
-    <button type="button" class="btn btn-primary" onclick="sendExperimentCommand('startExperiment')">Начать эксперимент</button>
+        <div class="container">
+            <h2>Эксперимент</h2>
+            <div class="alert alert-info" role="alert">
+                <strong>Статус:</strong> <span id="experiment-status">ок</span> |
+                <strong>Последнее обновление:</strong> <span id="last-update">2024-12-14 02:49:10</span>
+            </div>
+            
+            <div class="mb-3">
+                <label for="command-select" class="form-label">Команды</label>
+                <select id="command-select" class="form-select">
+                    <option value="start">Старт</option>
+                    <option value="stop">Стоп</option>
+                    <option value="update">Обновить</option>
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label for="command-args" class="form-label">Аргументы</label>
+                <input type="text" id="command-args" class="form-control" placeholder="Введите аргументы">
+            </div>
+            
+            <button type="button" class="btn btn-primary" onclick="sendExperimentCommand()">Отправить команду</button>
+            
+            <div class="progress mt-3">
+                <div class="progress-bar" role="progressbar" style="width: 33%;" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100">
+                    Шаг 1/3 - Вентиляция
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <h3>Информация о устройствах</h3>
+                <div class="row">
+                    {% for device in devices %}
+                        <div class="col-12 mb-3">
+                            <div class="card">
+                                <div class="card-body d-flex justify-content-between align-items-center">
+                                    <span><strong>Устройство ID:</strong> {{ device.params.device_id }}</span>
+                                    <span><strong>Имя:</strong> {{ device.params.name }}</span>
+                                    <span><strong>Статус:</strong> <span class="status-indicator">{{ device.params.status }}</span></span>
+                                    <span><strong>Дата обновления:</strong> {{ device.params.last_time_active }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -178,19 +218,24 @@
         $(this).tab('show');
     });
 
-    function sendExperimentCommand(command) {
+    function sendExperimentCommand() {
+        const command = document.getElementById('command-select').value;
+        const args = document.getElementById('command-args').value;
+
         $.ajax({
             url: '/handle-experiment',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ command: command }),
+            data: JSON.stringify({ command: command, args: args }),
             success: function(response) {
-                console.log('Команда эксперимента отправлена успешно');
-                createAlert('Success! Command has been sent successfully.', 'success')
+                // Обновляем статус и время последнего обновления
+                document.getElementById('experiment-status').innerText = response.status;
+                document.getElementById('last-update').innerText = new Date().toLocaleString();
+                createAlert(`Команда "${command}" успешно отправлена.`, 'success');
             },
             error: function(xhr, status, error) {
                 console.error('Ошибка при отправке команды эксперимента:', error);
-                createAlert(`Error! ${response.error}`, 'danger');
+                createAlert(`Ошибка! ${xhr.responseJSON.message}`, 'danger');
             }
         });
     }
