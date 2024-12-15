@@ -160,7 +160,7 @@ class HardwareRelay(Hardware):
                 self.params["last_error"] = message  # Сохраняем сообщение об ошибке
         except Exception as e:
             #TODO а так вообще бывает?
-            self.logger.error(e)
+            self.logger.error(e, exc_info=True)
             self.params["last_error"] = str(e)
             self.params["status"] = "Error"  # Устанавливаем статус как "Error"
 
@@ -305,7 +305,7 @@ class HardwareLamp(Hardware):
             self.data["white_pwm_2"] = info_dict["ch1_pwm"]
             self.data["red_pwm_1"] = info_dict["ch2_pwm"]
             self.data["red_pwm_2"] = info_dict["ch3_pwm"]
-            self.data["driver_temp"] = info_dict["pcb_temp"]
+            self.data["driver_temp"] = round(info_dict["pcb_temp"], 2)
             self.params["uptime"] = info_dict["uptime"]
             self.params["last_time_active"] = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
             self.params["status"] = "ok"
@@ -315,13 +315,107 @@ class HardwareLamp(Hardware):
             return False
 
 
+
+# class HardwareHumSensor(Hardware):
+#     """
+#
+#     """
+#
+#     pass
+
+class HardwareSensorOnRelayBoard(Hardware):
+    """
+    Handler for sensors, those mounted on relay board
+    https://github.com/houseofbigseals/esp32_relay
+    """
+    def __init__(
+            self,
+            device_id: int,  # unique id of device, to use in database and data handling
+            name: str,  # human-readable name like "Hum sensor 12"
+            ip_addr: str,  # ip addr of real remote sensor
+            family: str,  # TODO: family can be  .... ? "roots_temp", "ext_temp", "ext_hum", "int_temp", "int_hum"
+            last_time_active: str = None,
+            type: str = "sensor",
+            uptime_sec: int = 0,
+            description: str = "",
+            status: str = "unknown",
+            last_error: str = ""
+    ):
+        # Initialize the base class
+        super().__init__(
+            device_id=device_id,
+            name=name,
+        )
+
+        # it is params, and user cannot change them directly
+        self.params["last_time_active"] = last_time_active
+        self.params["type"]= type
+        self.params["family"] = family
+        self.params["uptime_sec"] = uptime_sec
+        self.params["description"] = description
+        self.params["status"] = status
+        self.params["last_error"] = last_error
+        self.params["ip_addr"] = ip_addr
+        # let`s set commands to represent them on web-page
+        self.commands["---"] = None
+        # let`s set data param represent it on web-page
+        if (family == "roots_temp") or (family == "ext_temp") or (family == "int_temp"):
+            self.data["temp"] = 0
+            self.params["units"] = "°C"
+            self.logger.info(f"created device {name} in family {family}")
+        elif (family == "ext_hum") or (family == "int_hum"):
+            self.data["hum"] = 0
+            self.params["units"] = "%"
+            self.logger.info(f"created device {name} in family {family}")
+        # it is weird, but sensors connected to relay pcb, so ...
+        self.driver = esp32_relay_driver.ESP32RelayDriver(
+            host=self.params["ip_addr"],
+            name=self.params["name"]
+        )
+        # for d in self.data:
+        #     self.logger.info(f"device {name} in family {family} has {d}")
+
+
+    def run_command(self, command, arg):
+        """
+        I do not want to make some remote call, it is very unsafe
+        So lets every child class implements it itself manually
+        """
+        # sensors have no commands
+        return True
+
+    def get_info(self):
+        """
+        get info about state of that particular device
+        """
+
+        code_name = self.params["family"]
+        info_dict = self.driver.get_info()
+        # self.logger.debug(self.params["device_id"])
+        if info_dict:
+            self.params["uptime"] = info_dict["uptime"]
+            if (code_name  == "roots_temp") or (code_name  == "ext_temp") or (code_name  == "int_temp"):
+                temp = info_dict[code_name]
+                if temp == self.driver.SENSOR_ERROR_VALUE:
+                    self.params["status"] = "Error"
+                    return False
+                else:
+                    self.data["temp"] = round(info_dict[code_name], 2)
+
+            elif code_name == "ext_hum" or code_name =="int_hum":
+                hum = info_dict[code_name]
+                if hum == self.driver.SENSOR_ERROR_VALUE:
+                    self.params["status"] = "Error"
+                    return False
+                else:
+                    self.data["hum"] = round(info_dict[code_name], 2)
+            self.params["last_time_active"] = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+            self.params["status"] = "ok"
+            return True
+        else:
+            return False
+
 class HardwareSBA5(Hardware):
-    pass
-
-class HardwareHumSensor(Hardware):
-    pass
-
-class HardwareTempSensor(Hardware):
     pass
 
 

@@ -1,48 +1,15 @@
 import os
 import time
 import threading
-import redis
+
 from flask import Flask, render_template, jsonify, request, current_app
 from . import db
 from .db import get_db
 #from .tasks.data_logger_cycle import update_device_data
 from .tasks.ventilation_loop import ventilation_loop
-#from .tasks.start_tasks import init_tasks
-#from .systemd_handle import init_systemd_handlers
+from .tasks.update_data_task import state_update_worker
 from .hardware.hardware import init_hardware, handle_command, get_device_states
 from .utils.logger import Logger
-
-
-def state_update_worker(app_context):
-    with app_context:
-        redis_client = get_db()
-        # Redis keys for commands and task state
-        COMMAND_KEY = "state_update_worker_command"
-        COMMAND_ARGS_KEY = "state_update_worker_command_args"
-        TASK_LOCK_KEY = "state_update_worker"
-        TASK_PID_KEY = "state_update_worker_pid"
-        pid = os.getpid()
-        logger = Logger.get_logger(f"state_update_worker_{pid}")
-        try:
-            # Attempt to acquire lock
-            if redis_client.set(TASK_LOCK_KEY, "locked", nx=True, ex=10):
-                redis_client.set(TASK_PID_KEY, pid)
-                logger.info(f"Worker started with PID {pid}")
-            else:
-                logger.info("Task is already running. Exiting worker.")
-                return
-
-            while True:
-                logger.info("Trying to load state updates from real devices.")
-                current_app.global_hardware_collection.update_all_hardware_info()
-                time.sleep(1)
-
-        finally:
-            # Release lock and clean up
-            if redis_client.get(TASK_PID_KEY) == str(pid):
-                redis_client.delete(TASK_LOCK_KEY)
-                redis_client.delete(TASK_PID_KEY)
-            logger.info(f"Worker with PID {pid} exited")
 
 
 
@@ -127,13 +94,16 @@ def create_app():
 
     # init tasks
     app_context = app.app_context()
-    with app_context:
-        redis_client = get_db()
-        COMMAND_KEY = "state_update_worker_command"
-        COMMAND_ARGS_KEY = "state_update_worker_command_args"
-        TASK_LOCK_KEY = "state_update_worker"
-        TASK_PID_KEY = "state_update_worker_pid"
-        redis_client.delete(COMMAND_KEY, COMMAND_ARGS_KEY, TASK_LOCK_KEY, TASK_PID_KEY)
+    # with app_context:
+        # redis_client = get_db()
+        # COMMAND_KEY = "state_update_worker_command"
+        # COMMAND_ARGS_KEY = "state_update_worker_command_args"
+        # TASK_LOCK_KEY = "state_update_worker"
+        # TASK_PID_KEY = "state_update_worker_pid"
+        # redis_client.delete(COMMAND_KEY, COMMAND_ARGS_KEY, TASK_LOCK_KEY, TASK_PID_KEY)
+
+    # start data updating thread
+    # TODO: make one thread for each device? It will make updating much faster
     thread = threading.Thread(target=state_update_worker, args=(app_context,), daemon=True)
     thread.start()
 

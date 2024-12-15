@@ -37,7 +37,7 @@ if __name__ == "__main__":
     redis_client = redis.StrictRedis(host='localhost', port=6379, decode_responses=True)
 
     # Load data for devices from ID 100 to 105
-    devices_data = load_devices_from_redis(redis_client, start_id=100, end_id=105)
+    devices_data = load_devices_from_redis(redis_client, start_id=100, end_id=115)
 
     # Print the hierarchical data
     for device_id, device_data in devices_data.items():

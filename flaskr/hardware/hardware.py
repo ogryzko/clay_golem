@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0, "/opt/clay/clay_golem")
 print(sys.path)
-from flaskr.hardware.hardware_base import HardwareLamp, HardwareRelay
+from flaskr.hardware.hardware_base import HardwareLamp, HardwareRelay,HardwareSensorOnRelayBoard
 from flaskr.hardware.hardware_collection import HardwareCollection
 from flask import current_app, g
 from typing import Any
@@ -15,10 +15,6 @@ def init_hardware(app):
     """
     """
     print("INIT HARDWARE")
-
-
-    # TODO: read data from redis
-    # TODO: if there are no data in redis, then create that data in default way and set in redis "hardware lock" on
 
     # for now just stubs
     lamp0 = HardwareLamp(
@@ -50,7 +46,43 @@ def init_hardware(app):
         channel=3,
         ip_addr="10.10.0.18"
     )
-    # is dependency injection is cool?
+    exp_ext_temp = HardwareSensorOnRelayBoard(
+        device_id=105,
+        name="exp_ext_temp",
+        description="DHT11 temp outside experimental plants volume",
+        family="ext_temp",
+        ip_addr="10.10.0.5"
+    )
+    exp_ext_hum = HardwareSensorOnRelayBoard(
+        device_id=106,
+        name="exp_ext_hum",
+        description="DHT11 humidity outside experimental plants volume",
+        family="ext_hum",
+        ip_addr="10.10.0.5"
+    )
+    exp_int_temp = HardwareSensorOnRelayBoard(
+        device_id=107,
+        name="exp_int_temp",
+        description="DHT22 temp inside experimental plants volume",
+        family="int_temp",
+        ip_addr="10.10.0.5"
+    )
+    exp_int_hum = HardwareSensorOnRelayBoard(
+        device_id=108,
+        name="exp_int_hum",
+        description="DHT22 hum inside experimental plants volume",
+        family="int_hum",
+        ip_addr="10.10.0.5"
+    )
+    exp_roots_temp = HardwareSensorOnRelayBoard(
+        device_id=109,
+        name="exp_roots_temp",
+        description="DS18B20 temp inside experimental roots module",
+        family="roots_temp",
+        ip_addr="10.10.0.5"
+    )
+
+
     with app.app_context():
         current_app.global_hardware_collection = HardwareCollection(
             app,
@@ -59,7 +91,12 @@ def init_hardware(app):
                 101: relay0,
                 102: relay1,
                 103: relay2,
-                104: relay3
+                104: relay3,
+                105: exp_ext_temp,
+                106: exp_ext_hum,
+                107: exp_int_temp,
+                108: exp_int_hum,
+                109: exp_roots_temp
             }
         )
 
@@ -84,6 +121,8 @@ def handle_command(device_id: int, command: str, arg: Any):
         device = current_app.global_hardware_collection.get(int(device_id))
         device.run_command(command, arg=arg)
         current_app.global_hardware_collection.store_one_device_update_to_redis(device_id)
+        # TODO: remove sqlite writing here, we will write to sqlite only when state update polling
+        current_app.global_hardware_collection.save_measurement_to_sqlite(device_id)
         return True
 
 def get_device_states():
@@ -98,5 +137,6 @@ def get_device_states():
 
 if __name__ == "__main__":
     # mock call like from real server creation process
-    init_hardware()
+    # init_hardware()
     # handle_command(1, "")
+    pass

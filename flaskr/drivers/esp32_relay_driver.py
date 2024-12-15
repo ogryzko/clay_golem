@@ -19,14 +19,14 @@ class ESP32RelayDriver(BaseDriver):
     def get_info(self):
         """Get state of all relays and sensors"""
         try:
-            response = requests.get(f"{self.base_url}/info")
+            response = requests.get(f"{self.base_url}/info", timeout=5)
             self.logger.debug(f"Got info response: {response.json()}")
             if response.status_code == 200:
                 return response.json()
                 # it returns giant dict, see https://github.com/houseofbigseals/esp32_relay
             self.logger.warning(f"Unexpected status code: {response.status_code}")
         except Exception as e:
-            self.logger.error(f"Error getting info: {str(e)}")
+            self.logger.error(f"Error getting info: {str(e)}", exc_info=True)
         return None
 
     def get_sensor_value(self, sensor_type):
@@ -36,7 +36,7 @@ class ESP32RelayDriver(BaseDriver):
             sensor_type (str): One of: ext_temp, ext_hum, int_temp, int_hum, roots_temp
         """
         try:
-            response = requests.get(f"{self.base_url}/{sensor_type}")
+            response = requests.get(f"{self.base_url}/{sensor_type}", timeout=5)
             self.logger.debug(f"Got sensor value response: {response.text}")
             if response.status_code == 200:
                 value = float(response.text)
@@ -46,7 +46,7 @@ class ESP32RelayDriver(BaseDriver):
                 return value
             self.logger.warning(f"Unexpected status code for sensor {sensor_type}: {response.status_code}")
         except Exception as e:
-            self.logger.error(f"Error getting sensor value for {sensor_type}: {str(e)}")
+            self.logger.error(f"Error getting sensor value for {sensor_type}: {str(e)}", exc_info=True)
         return None
 
     def set_relay_state(self, channel: int, state: Union[bool, int]) -> Tuple[bool, str]:
@@ -71,7 +71,7 @@ class ESP32RelayDriver(BaseDriver):
         elif isinstance(state, int) and state in [0, 1]:
             state_value = state
         else:
-            self.logger.error(f"Invalid state value: {state}. Must be 0 or 1.")
+            self.logger.error(f"Invalid state value: {state}. Must be 0 or 1.", exc_info=True)
             raise ValueError("State must be either 0 or 1.")
         
         data: Dict[str, Any] = {
@@ -84,7 +84,8 @@ class ESP32RelayDriver(BaseDriver):
             response = requests.post(
                 f"{self.base_url}/relay",
                 headers=headers,
-                data=json.dumps(data)
+                data=json.dumps(data),
+                timeout = 5
             )
             
             result: str = response.text.strip()
@@ -109,7 +110,7 @@ class ESP32RelayDriver(BaseDriver):
             return False, f"Неожиданный ответ: {result}"
             
         except Exception as e:
-            self.logger.error(f"Error setting relay state: {str(e)}")
+            self.logger.error(f"Error setting relay state: {str(e)}", exc_info=True)
             return False, f"Ошибка запроса: {str(e)}"
 
     def reset_device(self):
@@ -120,17 +121,18 @@ class ESP32RelayDriver(BaseDriver):
             response = requests.post(
                 f"{self.base_url}/reset",
                 headers=headers,
-                data='force_reset'
+                data='force_reset',
+                timeout=5
             )
             if response.status_code == 200:
                 self.logger.info("Device reset successful")
                 return True
             self.logger.warning(f"Device reset failed with status code: {response.status_code}")
         except Exception as e:
-            self.logger.error(f"Error during device reset: {str(e)}")
+            self.logger.error(f"Error during device reset: {str(e)}", exc_info=True)
         return False
 
 if __name__ == "__main__":
     lamp1 = ESP32RelayDriver("esp32_relay_5.local", name="relay5")  # ("10.10.0.12")
-    print(lamp1.get_info())
-    print(lamp1.set_relay_state(0, 9))
+    # print(lamp1.get_info())
+    # print(lamp1.set_relay_state(0, 9))

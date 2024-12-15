@@ -7,3 +7,4 @@ pytest
 requests-mock
 pyserial
 thread
+matplotlib
