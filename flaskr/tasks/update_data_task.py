@@ -7,8 +7,9 @@ from flask import current_app
 import os
 import time
 from flaskr.utils.logger import Logger
+from flaskr import create_app  # Импортируйте create_app
 
-def state_update_worker(*args, **kwargs):
+def state_update_worker():
     """
     That worker must be run only once. For that purpose we have lock in redis.
     """
@@ -83,3 +84,8 @@ def one_device_update_worker(app_context, device_id):
                 redis_client.delete(TASK_LOCK_KEY)
                 redis_client.delete(TASK_PID_KEY)
             logger.info(f"Worker with PID {pid} exited")
+
+def start_state_update_worker():
+    app = create_app()  # Создайте экземпляр приложения
+    with app.app_context():  # Создайте контекст приложения
+        state_update_worker()  # Запустите worker

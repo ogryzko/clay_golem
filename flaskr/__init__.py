@@ -7,7 +7,7 @@ from . import db
 from .db import get_db
 #from .tasks.data_logger_cycle import update_device_data
 from .tasks.ventilation_loop import ventilation_loop
-from .tasks.update_data_task import state_update_worker
+from .tasks.update_data_task import start_state_update_worker, state_update_worker
 from .tasks.ventilation_task import VentilationTaskThread
 from .hardware.hardware_config import init_hardware
 from .utils.logger import Logger
@@ -120,7 +120,7 @@ def create_app():
     app_context = app.app_context()
     # start data updating thread
     # TODO: make one thread for each device? It will make updating much faster
-    update_thread = threading.Thread(target=state_update_worker, args=(app_context,), daemon=True)
+    update_thread = threading.Thread(target=start_state_update_worker(), args=(), daemon=True)
     # update_thread.start()
     with app_context:
         current_app.update_thread = update_thread
