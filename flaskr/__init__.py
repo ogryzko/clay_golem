@@ -73,7 +73,7 @@ def create_app():
 
             # Extract the device ID, command, and argument from the data
             # and convert it to correct formats
-            device_id = str(data.get('device_id'))
+            device_id = int(data.get('device_id'))
             command = str(data.get('command'))
             arg = data.get('arg')
             if arg:
