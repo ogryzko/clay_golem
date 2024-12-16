@@ -71,6 +71,8 @@ class VentilationTaskThread(Thread):
 
                 self.logger.info(f"{prefix} started with PID {pid}")
             else:
+                self.kill_event.set()
+                print("we are not the chosen one")
                 self.logger.info("Ventilation task is already running. Exiting worker.")
                 return
 
