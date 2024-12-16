@@ -54,9 +54,12 @@ def create_app():
             with app_context:
                 success = current_app.global_hardware_collection.handle_task_command(task_id, command, arg)
 
+                # Получаем данные о задаче вентиляции
+                task_data = VentilationTaskThread.read_task_data(current_app.redis_client, task_id)
+
             # Return a success response
             if success:
-                return jsonify({'status': 'ok'}), 200
+                return jsonify({'status': 'ok', 'task_data': task_data}), 200
             else:
                 return jsonify({'status': 'error', 'error': 'Failed to handle task command'}), 500
         except Exception as e:
