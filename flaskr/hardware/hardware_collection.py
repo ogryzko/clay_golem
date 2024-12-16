@@ -2,25 +2,29 @@ import json
 from datetime import  datetime
 import sqlite3
 import redis
-from typing import List, Dict, Type, TypeVar, Union
+from typing import List, Dict, Type, TypeVar, Union, Any
 from flaskr.hardware.hardware_base import Hardware, HardwareRelay, HardwareLamp, HardwareSBA5, HardwareSensorOnRelayBoard
 from flask import current_app, g
 from flaskr.db import get_db, get_data_db, clear_db
 from flaskr.utils.logger import Logger
+from flaskr.tasks.ventilation_task import VentilationTaskThread
 
 class HardwareCollection:
     """
     That is a class container for hardware devices, that can work with redis and sqlite
     """
 
-    def __init__(self, app, hardware_dict: Dict[int, Hardware]=None):
+    def __init__(self, app_context, hardware_dict: Dict[int, Hardware]=None):
         """
         NOTE:
         we cannot load descriptions from redis if devices were not loaded to dict before !
         but we can add or remove device in work process
         """
-        with app.app_context():
+        with app_context:
+            # dict to store hardware handlers
             self.hardware: Dict[int, Hardware] = hardware_dict if hardware_dict else {}
+            # list to store task handler names
+            self.tasks: List[str] = list()   # dirty workaround, sorry
             self.redis_client = get_db()
             self.logger = Logger.get_logger(f"{self.__class__.__name__}")
             # check if there is already working devices or we are first instance, ie if redis is empty
@@ -95,7 +99,6 @@ class HardwareCollection:
 
     def get(self, hardware_id: int) -> Union[Hardware, None]:
         """Retrieve a hardware object by its ID."""
-        # print(self.hardware[hardware_id].to_dict())
         return self.hardware[hardware_id]
 
     def __iter__(self):
@@ -161,7 +164,48 @@ class HardwareCollection:
         # print(devices_list)
         return devices_list
 
+    def handle_command(self, device_id: int, command: str, arg: Any):
+        """
+        Method to directly call from flask
+        """
+        if self.length() == 0:
+            raise AssertionError("Hardware has not initialized yet!")
 
+        else:
+            device = self.hardware[device_id]
+            device.run_command(command, arg=arg)
+            self.store_one_device_update_to_redis(device_id)
+            # TODO: remove sqlite writing here, we will write to sqlite only when state update polling
+            # self.save_measurement_to_sqlite(device_id)
+            return True
+
+    def get_device_states(self):
+        """
+        Method to directly call from flask
+        """
+        # global global_hardware_collection
+        if self.length() == 0:
+            raise AssertionError("Hardware has not initialized yet!")
+        else:
+            hardware_list = self.load_hardware_description_from_redis()
+            # and add here data about tasks
+            tasks_list = []
+            for t in self.tasks:
+                tasks_list.append(VentilationTaskThread.read_task_data(get_db(), t))  # returns a dict
+            hardware_list.extend(tasks_list)
+            return hardware_list
+
+    def handle_task_command(self, task_name: str, command: str, arg: Any):
+        """
+        Method to directly call from flask
+        """
+        VentilationTaskThread.write_task_command(
+            self.redis_client,
+            task_name,
+            command,
+            arg
+        )
+        return True
 
 if __name__ == "__main__":
     # Initialize Redis client
