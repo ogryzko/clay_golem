@@ -47,24 +47,6 @@ class Hardware(ABC):
         """
         pass
 
-    # @classmethod
-    # def from_dict(cls: Type[T], data: Dict) -> T:
-    #     """Create object from a dictionary representation."""
-    #     # TODO: change to be more abstract
-    #     instance = cls(
-    #         device_id=data["params"]["device_id"],
-    #         name=data["params"]["name"],
-    #         last_time_active=data["params"]["last_time_active"],
-    #         dev_type=data["params"]["dev_type"],
-    #         uptime_sec=data["params"]["uptime_sec"],
-    #         description=data["params"]["description"],
-    #         status=data["params"]["status"],
-    #         last_error=data["params"]["last_error"],
-    #     )
-    #     instance.commands = data.get("commands", {})
-    #     instance.data = data.get("data", {})
-    #     return instance
-
     def __repr__(self):
         return f"({json.dumps(self.to_dict(), indent=2)})"
 

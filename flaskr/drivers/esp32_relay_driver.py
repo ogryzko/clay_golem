@@ -19,7 +19,7 @@ class ESP32RelayDriver(BaseDriver):
     def get_info(self):
         """Get state of all relays and sensors"""
         try:
-            response = requests.get(f"{self.base_url}/info", timeout=5)
+            response = requests.get(f"{self.base_url}/info", timeout=2)
             self.logger.debug(f"Got info response: {response.json()}")
             if response.status_code == 200:
                 return response.json()
@@ -36,7 +36,7 @@ class ESP32RelayDriver(BaseDriver):
             sensor_type (str): One of: ext_temp, ext_hum, int_temp, int_hum, roots_temp
         """
         try:
-            response = requests.get(f"{self.base_url}/{sensor_type}", timeout=5)
+            response = requests.get(f"{self.base_url}/{sensor_type}", timeout=2)
             self.logger.debug(f"Got sensor value response: {response.text}")
             if response.status_code == 200:
                 value = float(response.text)
@@ -85,7 +85,7 @@ class ESP32RelayDriver(BaseDriver):
                 f"{self.base_url}/relay",
                 headers=headers,
                 data=json.dumps(data),
-                timeout = 5
+                timeout = 2
             )
             
             result: str = response.text.strip()
@@ -122,7 +122,7 @@ class ESP32RelayDriver(BaseDriver):
                 f"{self.base_url}/reset",
                 headers=headers,
                 data='force_reset',
-                timeout=5
+                timeout=2
             )
             if response.status_code == 200:
                 self.logger.info("Device reset successful")
