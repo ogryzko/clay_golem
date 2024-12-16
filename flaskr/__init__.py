@@ -63,6 +63,7 @@ def create_app():
             else:
                 return jsonify({'status': 'error', 'error': 'Failed to handle task command'}), 500
         except Exception as e:
+            app.logger.error(f"Ошибка в обработчике /handle-experiment: {str(e)}", exc_info=True)
             # Return an error response if something goes wrong
             return jsonify({'status': 'error', 'error': str(e)}), 500
     
@@ -92,6 +93,7 @@ def create_app():
             else:
                 return jsonify({'status': 'error', 'error': 'Failed to handle command'}), 500
         except Exception as e:
+            app.logger.error(f"Ошибка в обработчике /handle-request: {str(e)}", exc_info=True)
             # Return an error response if something goes wrong
             return jsonify({'status': 'error', 'error': str(e)}), 500
 
