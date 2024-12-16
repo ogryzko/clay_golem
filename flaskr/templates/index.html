@@ -116,6 +116,9 @@
                     <option value="start">Старт</option>
                     <option value="stop">Стоп</option>
                     <option value="update">Обновить</option>
+                    <option value="ping">Пинг</option>
+                    <option value="reset">Сброс</option>
+                    <option value="kill">Убить</option>
                 </select>
             </div>
             
@@ -228,7 +231,7 @@
             contentType: 'application/json',
             data: JSON.stringify({ command: command, args: args }),
             success: function(response) {
-                // Обновляем статус и время последнего обновления
+                // Обновляем статус и врем�� последнего обновления
                 document.getElementById('experiment-status').innerText = response.status;
                 document.getElementById('last-update').innerText = new Date().toLocaleString();
                 createAlert(`Команда "${command}" успешно отправлена.`, 'success');
