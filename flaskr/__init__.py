@@ -19,7 +19,6 @@ def create_app():
     instance_path = os.path.join(os.getcwd(), "instance")   # finally
     print(instance_path)
     app = Flask(__name__,  instance_path=instance_path, instance_relative_config=True)
-    app.redis_client = get_db()
 
     # print(app.instance_path)
     res = app.config.from_pyfile('config.py')
@@ -56,7 +55,7 @@ def create_app():
                 success = current_app.global_hardware_collection.handle_task_command(task_id, command, arg)
 
                 # Получаем данные о задаче вентиляции
-                task_data = VentilationTaskThread.read_task_data(current_app.redis_client, task_id)
+                task_data = VentilationTaskThread.read_task_data(get_db(), task_id)
 
             # Return a success response
             if success:
