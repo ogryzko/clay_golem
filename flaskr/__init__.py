@@ -19,6 +19,7 @@ def create_app():
     instance_path = os.path.join(os.getcwd(), "instance")   # finally
     print(instance_path)
     app = Flask(__name__,  instance_path=instance_path, instance_relative_config=True)
+    app.redis_client = get_db()
 
     # print(app.instance_path)
     res = app.config.from_pyfile('config.py')
