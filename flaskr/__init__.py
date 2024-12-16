@@ -55,6 +55,7 @@ def create_app():
                 success = current_app.global_hardware_collection.handle_task_command(task_id, command, arg)
 
                 # Получаем данные о задаче вентиляции
+                redis_client = get_db()
                 task_data = VentilationTaskThread.read_task_data(get_db(), task_id)
 
             # Return a success response
