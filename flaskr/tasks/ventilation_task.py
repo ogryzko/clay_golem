@@ -38,24 +38,6 @@ class VentilationTaskThread(Thread):
             self.TASK_COMMANDS = f"{prefix}:commands"
             self.logger = Logger.get_logger(f"{prefix}_{pid}")
 
-
-            # Attempt to acquire lock
-            if self.redis_client.set(self.TASK_LOCK_KEY, "locked", nx=True, ex=10):
-                self.redis_client.set(self.TASK_PID_KEY, pid)
-
-                self.logger.info(f"{prefix} started with PID {pid}")
-            else:
-                self.logger.info("Ventilation task is already running. Exiting worker.")
-                return
-
-            # create drivers
-            # YES, THEY ARE HARDCODED
-            self.relay_0: HardwareRelay = current_app.global_hardware_collection.hardware[101]
-            self.relay_1: HardwareRelay = current_app.global_hardware_collection.hardware[102]
-            self.relay_2: HardwareRelay = current_app.global_hardware_collection.hardware[103]
-            self.relay_3: HardwareRelay = current_app.global_hardware_collection.hardware[104]
-
-
             # stages and numbers for future
             self.stages = {
                 0: "idle",
@@ -83,6 +65,24 @@ class VentilationTaskThread(Thread):
                 "current_stage_name": self.stages[0]
             }
             self.data = {}
+            # Attempt to acquire lock
+            if self.redis_client.set(self.TASK_LOCK_KEY, "locked", nx=True, ex=10):
+                self.redis_client.set(self.TASK_PID_KEY, pid)
+
+                self.logger.info(f"{prefix} started with PID {pid}")
+            else:
+                self.logger.info("Ventilation task is already running. Exiting worker.")
+                return
+
+            # create drivers
+            # YES, THEY ARE HARDCODED
+            self.relay_0: HardwareRelay = current_app.global_hardware_collection.hardware[101]
+            self.relay_1: HardwareRelay = current_app.global_hardware_collection.hardware[102]
+            self.relay_2: HardwareRelay = current_app.global_hardware_collection.hardware[103]
+            self.relay_3: HardwareRelay = current_app.global_hardware_collection.hardware[104]
+
+
+
 
         # save it all to redis first time
         self._write_status()
