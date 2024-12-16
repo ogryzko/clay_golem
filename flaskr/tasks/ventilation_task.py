@@ -297,7 +297,7 @@ if __name__ == "__main__":
     redis_port = 6379
     task_prefix = "worker:ventilation"
     redis_client = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
-    # VentilationTaskThread.write_task_command("start")
+    VentilationTaskThread.write_task_command(redis_client, task_prefix, "start")
     task_data = VentilationTaskThread.read_task_data(redis_client, task_prefix)
     print(json.dumps(task_data, indent=4))
     # time.sleep(10)
