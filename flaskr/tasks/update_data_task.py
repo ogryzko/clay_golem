@@ -8,11 +8,11 @@ import os
 import time
 from flaskr.utils.logger import Logger
 
-def state_update_worker(app_context):
+def state_update_worker():
     """
     That worker must be run only once. For that purpose we have lock in redis.
     """
-    with app_context:
+    with current_app.app_context():
         pid = os.getpid()
         redis_client = get_db()
         # Redis keys for commands and task state
