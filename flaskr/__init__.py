@@ -8,7 +8,7 @@ from .db import get_db
 #from .tasks.data_logger_cycle import update_device_data
 from .tasks.ventilation_loop import ventilation_loop
 from .tasks.update_data_task import state_update_worker
-from .tasks.ventilation_task import VentilationTaskThread
+from .tasks.ventilation_task import TaskThread, VentilationTaskThread, ExpVentilationTaskThread, ControlVentilationTaskThread
 from .hardware.hardware_config import init_hardware
 from .utils.logger import Logger
 
@@ -124,22 +124,25 @@ def create_app():
     with app_context:
         current_app.update_thread = update_thread
 
-    # start ventilation task thread
-    vent_task = VentilationTaskThread(app_context, name="worker:ventilation")
-    # vent_task.start()
-
-    with app_context:
-        current_app.vent_task = vent_task
+        # start ventilation task threads
+    test_task = VentilationTaskThread(name="worker:test")
+    # exp_vent_task = ExpVentilationTaskThread(name="worker:exp_ventilation")
+    # control_vent_task = ControlVentilationTaskThread(name="worker:control_ventilation")
 
     # add task names to hardware collection
     # and start them all
     with app_context:
-        current_app.global_hardware_collection.tasks.append(current_app.vent_task.params["name"])
+        # current_app.global_hardware_collection.tasks.append(current_app.vent_task.params["name"])
+        current_app.global_hardware_collection.tasks.append("worker:test")
+        # current_app.global_hardware_collection.tasks.append("worker:exp_ventilation")
+        # current_app.global_hardware_collection.tasks.append("worker:control_ventilation")
         print(current_app.global_hardware_collection.tasks)
+
     update_thread.start()
-    print("update thread started")
-    vent_task.start()
-    print("vent_task started")
+    test_task.start()
+    # exp_vent_task.start()
+    # control_vent_task.start()
+
 
 
     # init systemd handle cli commands
