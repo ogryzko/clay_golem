@@ -5,8 +5,6 @@ import threading
 from flask import Flask, render_template, jsonify, request, current_app
 from . import db
 from .db import get_db
-#from .tasks.data_logger_cycle import update_device_data
-from .tasks.ventilation_loop import ventilation_loop
 from .tasks.update_data_task import state_update_worker
 from .tasks.ventilation_task import TaskThread, VentilationTaskThread, ExpVentilationTaskThread, ControlVentilationTaskThread
 from .hardware.hardware_config import init_hardware

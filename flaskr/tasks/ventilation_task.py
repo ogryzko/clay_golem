@@ -118,6 +118,7 @@ class TaskThread(Thread):
                     self._write_status()
                     self.logger.info("pong")
                 elif command == "kill":
+                    self.params["status"] = "killed"
                     self.logger.info("Kill command received")
                     self.redis_client.delete(self.COMMAND_KEY)
                     self.kill_event.set()
