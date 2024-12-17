@@ -1,5 +1,5 @@
 <div class="container">
-    <h2>Эксперимент</h2>
+    <h2>{{ device.params.name }}</h2>
     <div class="alert alert-info" role="alert">
         <strong>Статус:</strong> <span id="experiment-status">{{ device.params.status }}</span> |
         <strong>Последнее обновление:</strong> <span id="last-update">{{ device.params.last_response }}</span>
@@ -29,22 +29,4 @@
             Шаг {{ device.params.step }}/{{ total_stages }} - {{ device.params.current_stage_name }}
         </div>
     </div>
-    <!-- <div class="mt-4"></div>
-        <h3>Информация о устройствах</h3>
-        <div class="row">
-            {% for device in devices %}
-                {% if device.params.type != 'task' %}
-                <div class="col-12 mb-3">
-                    <div class="card">
-                        <div class="card-body d-flex justify-content-between align-items-center">
-                            <span><strong>Устройство ID:</strong> {{ device.params.device_id }}</span>
-                            <span><strong>Имя:</strong> {{ device.params.name }}</span>
-                            <span><strong>Статус:</strong> <span class="status-indicator">{{ device.params.status }}</span></span>
-                            <span><strong>Дата обновления:</strong> {{ device.params.last_time_active }}</span>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div> 
-    </div> -->
 </div>
