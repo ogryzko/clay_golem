@@ -1,0 +1,70 @@
+<div class="container">
+    <h2>{{ device.params.name }}</h2>
+    <div class="alert alert-info" role="alert">
+        <strong>Статус:</strong> <span id="experiment-status">{{ device.params.status }}</span> |
+        <strong>Последнее обновление:</strong> <span id="last-update">{{ device.params.last_response }}</span>
+    </div>
+    
+    <div class="mb-3">
+        <label for="command-select" class="form-label">Команды</label>
+        <select id="command-select" class="form-select">
+            {% for command in device.commands.keys() %}
+                <option value="{{ command }}">{{ command }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="mb-3">
+        <label for="command-args" class="form-label">Аргументы</label>
+        <input type="text" id="command-args" class="form-control" placeholder="Введите аргументы">
+    </div>
+    
+    <button type="button" class="btn btn-primary" onclick="sendExperimentCommand()">Отправить команду</button>
+    
+    <div class="progress mt-3">
+        {% set total_stages = device.stages | length %}
+        {% set progress_percentage = (device.params.step / (total_stages - 1)) * 100 if total_stages > 1 else 100 %}
+        
+        <div class="progress-bar" role="progressbar" style="width: {{ progress_percentage }}%;" aria-valuenow="{{ progress_percentage }}" aria-valuemin="0" aria-valuemax="100">
+            Шаг {{ device.params.step }}/{{ total_stages }} - {{ device.params.current_stage_name }}
+        </div>
+    </div>
+
+    <!-- Кнопка для открытия модального окна с параметрами -->
+    <button type="button" class="btn btn-info mt-3" data-bs-toggle="modal" data-bs-target="#paramsModal">
+        Показать параметры
+    </button>
+
+    <!-- Модальное окно с параметрами -->
+    <div class="modal fade" id="paramsModal" tabindex="-1" aria-labelledby="paramsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paramsModalLabel">Параметры задачи {{ device.params.name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Параметр</th>
+                                <th>Значение</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for param, value in device.params.items() %}
+                                <tr>
+                                    <td>{{ param }}</td>
+                                    <td>{{ value }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

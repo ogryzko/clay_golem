@@ -72,6 +72,9 @@
             <li class="nav-item">
                 <a class="nav-link" id="experiment-tab" data-toggle="tab" href="#experiment" role="tab" aria-controls="experiment" aria-selected="false">Experiment</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" id="devices-tab" data-toggle="tab" href="#devices" role="tab" aria-controls="devices" aria-selected="false">Устройства</a>
+            </li>
         </ul>
 
 
@@ -102,14 +105,32 @@
         {% endfor %}
     </div>
     <div class="tab-pane fade" id="experiment" role="tabpanel" aria-labelledby="experiment-tab">
-        <!-- Experiment tasks and automations -->
-        <p> There will be controls for whole experiment</p>
         {% for device in devices %}
             {% if device.params.type == 'task' %}
-                <!-- put tasks visualization here -->
+                {% include 'experiment_block.html' %}
             {% endif %}
         {% endfor %}
-        <!--<button type="button" class="btn btn-primary" onclick="sendExperimentCommand('startExperiment')">Начать эксперимент</button>-->
+    </div>
+    <div class="tab-pane fade" id="devices" role="tabpanel" aria-labelledby="devices-tab">
+        <div class="container mt-3">
+            <h3>Состояние всех устройств</h3>
+            <div class="row">
+                {% for device in devices %}
+                    {% if device.params.type != 'task' %}  <!-- Исключаем устройства типа 'task' -->
+                        <div class="col-md-4 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Устройство ID: {{ device.params.device_id }}</h5>
+                                    <p class="card-text"><strong>Имя:</strong> {{ device.params.name }}</p>
+                                    <p class="card-text"><strong>Статус:</strong> <span class="status-indicator">{{ device.params.status }}</span></p>
+                                    <p class="card-text"><strong>Дата обновления:</strong> {{ device.params.last_time_active }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
     </div>
 </div>
 
@@ -178,19 +199,34 @@
         $(this).tab('show');
     });
 
-    function sendExperimentCommand(command) {
+    function sendExperimentCommand() {
+        const command = document.getElementById('command-select').value;
+        const args = document.getElementById('command-args').value;
+
         $.ajax({
             url: '/handle-experiment',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ command: command }),
+            data: JSON.stringify({ command: command, args: args }),
             success: function(response) {
-                console.log('Команда эксперимента отправлена успешно');
-                createAlert('Success! Command has been sent successfully.', 'success')
+                // Обновляем статус и время последнего обновления
+                document.getElementById('experiment-status').innerText = response.status;
+                document.getElementById('last-update').innerText = new Date().toLocaleString();
+                document.getElementById('ventilation-task-data').innerText = JSON.stringify(response.task_data, null, 2); // Отображаем данные о задаче
+
+                // Обновляем прогресс-бар
+                const step = response.task_data.params.step; // Извлекаем ��начение step
+                const progressBar = document.getElementById('progress-bar');
+                const progressPercentage = (step / 4) * 100; // Предположим, что максимальный шаг 4
+                progressBar.style.width = progressPercentage + '%';
+                progressBar.setAttribute('aria-valuenow', progressPercentage);
+                progressBar.innerText = Math.round(progressPercentage) + '%'; // Обновляем текст прогресс-бара
+
+                createAlert(`Команда "${command}" успешно отправлена.`, 'success');
             },
             error: function(xhr, status, error) {
                 console.error('Ошибка при отправке команды эксперимента:', error);
-                createAlert(`Error! ${response.error}`, 'danger');
+                createAlert(`Ошибка! ${xhr.responseJSON.message}`, 'danger');
             }
         });
     }
