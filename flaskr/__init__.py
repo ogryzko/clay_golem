@@ -55,12 +55,7 @@ def create_app():
                 success = current_app.global_hardware_collection.handle_task_command(task_id, command, arg)
 
                 # Получаем данные о задаче вентиляции
-                task_data = {
-                    "task_id": "12345",  # Замените на нужное значение
-                    "task_name": "Вентиляция",  # Замените на нужное значение
-                     "status": "в процессе",
-                     "step": 1
-                    }
+                task_data = TaskThread.read_task_data(get_db(), task_id)
 
 
             # Return a success response
