@@ -93,15 +93,16 @@ def show_all_tables(db_name):
 if __name__ == "__main__":
     # Example usage
     db_name = "/opt/clay/clay_golem/instance/data.sqlite"
-    start_datetime = "01-12-2024 00:00:00"
-    end_datetime = "16-12-2024 23:59:59"
+    start_datetime = "16-12-2024 00:00:00"
+    end_datetime = "17-12-2024 23:59:59"
     # tables = ['device_100_red_pwm_2', 'device_100_white_pwm_2', 'device_101_state', 'device_102_state',
     #           'device_103_state', 'device_104_state']
-    tables = ['device_100_red_pwm_1',  'device_100_white_pwm_1', 'device_100_driver_temp', 'device_105_temp', 'device_106_hum', 'device_107_temp', 'device_108_hum', 'device_109_temp']
-    tables = [ 'device_101_state', 'device_102_state', 'device_103_state', 'device_104_state']
+    exp_tables = ['device_110_state', 'device_111_state', 'device_112_state', 'device_113_state', 'device_106_hum', 'device_107_temp', 'device_108_hum', 'device_109_temp']
+    control_tables =  ['device_118_state', 'device_119_state', 'device_120_state', 'device_121_state']
+    # tables = [ 'device_101_state', 'device_102_state', 'device_103_state', 'device_104_state']
     # Fetch data and plot
     # data = fetch_data_for_plot(db_name, device_ids, start_datetime, end_datetime)
     # plot_data(data, device_ids)
     print(show_all_tables(db_name))
-    fetch_and_plot_data(db_name, tables, start_datetime, end_datetime)
+    fetch_and_plot_data(db_name, exp_tables, start_datetime, end_datetime)
 
