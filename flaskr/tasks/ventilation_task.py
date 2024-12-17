@@ -100,11 +100,11 @@ class TaskThread(Thread):
                 if command == "start" and not self.params["running"] :
                     self.redis_client.delete(self.COMMAND_KEY)  # Clear the command
                     self.params["running"] = True
-                    self.logger.info(f"start work from step {self.params["step"]}")
+                    self.logger.info(f"start work from step {self.params['step']}")
                 elif command == "stop" and self.params["running"] :
                     self.redis_client.delete(self.COMMAND_KEY)  # Clear the command
                     self.params["running"] = False
-                    self.logger.info(f"Stop command received: stop vent task at step {self.params["step"]}")
+                    self.logger.info(f"Stop command received: stop vent task at step {self.params['step']}")
                 elif command == "reset":
                     self.redis_client.delete(self.COMMAND_KEY)
                     self.params["step"] = 0
@@ -259,7 +259,7 @@ class ExpVentilationTaskThread(TaskThread):
         self.params["running"] = True   # that task is active by default
         self.next_work_time = self.calculate_next_work_time()
         self.params["next_run"] = self.next_work_time.strftime("%d-%m-%Y %H:%M:%S")
-        self.logger.info(f"next run time scheduled to {self.params["next_run"]}")
+        self.logger.info(f"next run time scheduled to {self.params['next_run']}")
 
 
     def calculate_next_work_time(self) -> datetime:
@@ -352,7 +352,7 @@ class ExpVentilationTaskThread(TaskThread):
                 self.relay.set_relay_state(channel=3, state=0)
                 self.next_work_time = self.calculate_next_work_time()
                 self.params["next_run"] = self.next_work_time.strftime("%d-%m-%Y %H:%M:%S")
-                self.logger.info(f"next run time scheduled to {self.params["next_run"]}")
+                self.logger.info(f"next run time scheduled to {self.params['next_run']}")
                 time.sleep(5)
                 self.params["step"] = 0
 
@@ -382,7 +382,7 @@ class ControlVentilationTaskThread(TaskThread):
         self.params["running"] = True   # that task is active by default
         self.next_work_time = self.calculate_next_work_time()
         self.params["next_run"] = self.next_work_time.strftime("%d-%m-%Y %H:%M:%S")
-        self.logger.info(f"next run time scheduled to {self.params["next_run"]}")
+        self.logger.info(f'next run time scheduled to {self.params["next_run"]}')
 
 
     def calculate_next_work_time(self) -> datetime:
@@ -444,14 +444,14 @@ class ControlVentilationTaskThread(TaskThread):
                 self.relay.set_relay_state(channel=3, state=0)
                 self.next_work_time = self.calculate_next_work_time()
                 self.params["next_run"] = self.next_work_time.strftime("%d-%m-%Y %H:%M:%S")
-                self.logger.info(f"next run time scheduled to {self.params["next_run"]}")
+                self.logger.info(f"next run time scheduled to {self.params['next_run']}")
                 time.sleep(5)
                 self.params["step"] = 0
 
 
             # finally update params
             self.params["last_response"] = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
-            self.params["current_stage_name"] = self.stages[self.params["step"]]
+            self.params["current_stage_name"] = self.stages[self.params['step']]
             self._write_status()
 
 
