@@ -22,7 +22,7 @@
     <button type="button" class="btn btn-primary" onclick="sendExperimentCommand()">Отправить команду</button>
     
     <div class="progress mt-3">
-        {% set total_stages = device.params.stages | length %}
+        {% set total_stages = device.stages | length %}
         {% set progress_percentage = (device.params.step / (total_stages - 1)) * 100 if total_stages > 1 else 100 %}
         
         <div class="progress-bar" role="progressbar" style="width: {{ progress_percentage }}%;" aria-valuenow="{{ progress_percentage }}" aria-valuemin="0" aria-valuemax="100">
