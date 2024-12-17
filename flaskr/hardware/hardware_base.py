@@ -19,7 +19,7 @@ class Hardware(ABC):
         self.params["device_id"] = device_id
         self.params["name"] = name
         # logger
-        self.logger = Logger.get_logger(f"{self.__class__.__name__}_{self.params["name"]}")
+        self.logger = Logger.get_logger(f"{self.__class__.__name__}_{self.params['name']}")
         # Default hardware cannot keep any commands or data, so initialize as empty dicts
         self.commands = dict()
         self.data = dict()

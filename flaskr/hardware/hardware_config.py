@@ -153,21 +153,21 @@ def init_hardware(app_context):
     )
     # control sensors
     control_int_temp = HardwareSensorOnRelayBoard(
-        device_id=121,
+        device_id=122,
         name="control_int_temp",
         description="DHT22 temp inside control plants volume",
         family="int_temp",
         ip_addr="10.10.0.7"
     )
     control_int_hum = HardwareSensorOnRelayBoard(
-        device_id=122,
+        device_id=123,
         name="control_int_hum",
         description="DHT22 hum inside control plants volume",
         family="int_hum",
         ip_addr="10.10.0.7"
     )
     control_roots_temp = HardwareSensorOnRelayBoard(
-        device_id=123,
+        device_id=124,
         name="control_roots_temp",
         description="DS18B20 temp inside control roots module",
         family="roots_temp",
