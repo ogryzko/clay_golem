@@ -43,6 +43,7 @@ def init_hardware(app_context):
         channel=3,
         ip_addr="10.10.0.18"
     )
+    # exp sensors
     exp_ext_temp = HardwareSensorOnRelayBoard(
         device_id=105,
         name="exp_ext_temp",
@@ -78,6 +79,100 @@ def init_hardware(app_context):
         family="roots_temp",
         ip_addr="10.10.0.5"
     )
+    # exp relays
+    exp_left_vent = HardwareRelay(
+        device_id=110,
+        name="Exp_vent_left",
+        channel=0,
+        ip_addr="10.10.0.5"
+    )
+    exp_right_vent = HardwareRelay(
+        device_id=111,
+        name="Exp_vent_right",
+        channel=1,
+        ip_addr="10.10.0.5"
+    )
+    exp_left_valve = HardwareRelay(
+        device_id=112,
+        name="Exp_valve_left",
+        channel=2,
+        ip_addr="10.10.0.5"
+    )
+    exp_right_valve = HardwareRelay(
+        device_id=113,
+        name="Exp_valve_right",
+        channel=3,
+        ip_addr="10.10.0.5"
+    )
+    co2_air_pump = HardwareRelay(
+        device_id=114,
+        name="CO2_air_pump",
+        channel=2,
+        ip_addr="10.10.0.6"
+    )
+    co2_valve = HardwareRelay(
+        device_id=115,
+        name="CO2_valve",
+        channel=3,
+        ip_addr="10.10.0.6"
+    )
+    exp_lamp = HardwareLamp(
+        device_id=116,
+        name="Exp_lamp",
+        ip_addr="10.10.0.15"
+    )
+    # control relays and lamp
+    control_lamp = HardwareLamp(
+        device_id=117,
+        name="Control_lamp",
+        ip_addr="10.10.0.16"
+    )
+    control_left_vent = HardwareRelay(
+        device_id=118,
+        name="Control_vent_left",
+        channel=0,
+        ip_addr="10.10.0.7"
+    )
+    control_right_vent = HardwareRelay(
+        device_id=119,
+        name="Control_vent_right",
+        channel=1,
+        ip_addr="10.10.0.7"
+    )
+    control_left_valve = HardwareRelay(
+        device_id=120,
+        name="Control_valve_left",
+        channel=2,
+        ip_addr="10.10.0.7"
+    )
+    control_right_valve = HardwareRelay(
+        device_id=121,
+        name="Control_valve_right",
+        channel=3,
+        ip_addr="10.10.0.7"
+    )
+    # control sensors
+    control_int_temp = HardwareSensorOnRelayBoard(
+        device_id=121,
+        name="control_int_temp",
+        description="DHT22 temp inside control plants volume",
+        family="int_temp",
+        ip_addr="10.10.0.7"
+    )
+    control_int_hum = HardwareSensorOnRelayBoard(
+        device_id=122,
+        name="control_int_hum",
+        description="DHT22 hum inside control plants volume",
+        family="int_hum",
+        ip_addr="10.10.0.7"
+    )
+    control_roots_temp = HardwareSensorOnRelayBoard(
+        device_id=123,
+        name="control_roots_temp",
+        description="DS18B20 temp inside control roots module",
+        family="roots_temp",
+        ip_addr="10.10.0.7"
+    )
 
 
     with app_context:
@@ -93,7 +188,22 @@ def init_hardware(app_context):
                 106: exp_ext_hum,
                 107: exp_int_temp,
                 108: exp_int_hum,
-                109: exp_roots_temp
+                109: exp_roots_temp,
+                110: exp_left_vent,
+                111: exp_right_vent,
+                112: exp_left_valve,
+                113: exp_right_valve,
+                114: co2_air_pump,
+                115: co2_valve,
+                116: exp_lamp,
+                117: control_lamp,
+                118: control_left_vent,
+                119: control_right_vent,
+                120: control_left_valve,
+                121: control_right_valve,
+                122: control_int_temp,
+                123: control_int_hum,
+                124: control_roots_temp
             }
         )
 

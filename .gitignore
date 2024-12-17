@@ -2,6 +2,7 @@ venv/
 logs/
 *.db
 *.pyc
+*.rdb
 __pycache__/
 
 instance/

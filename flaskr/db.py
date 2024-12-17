@@ -33,10 +33,10 @@ def get_db():
     this method returns redis pointer
     :return:
     """
-    if 'db' not in g:
+    # if 'db' not in g:
         # TODO update from config in future
-        g.db = redis.Redis(host='localhost', port=6379, decode_responses=True)   # mb it is important to already decode
-    return g.db
+        # g.db = redis.StrictRedis(host='localhost', port=6379, decode_responses=True)   # mb it is important to already decode
+    return redis.StrictRedis(host='localhost', port=6379, decode_responses=True)
 
 
 def get_data_db():
@@ -46,12 +46,11 @@ def get_data_db():
     :return:
     """
     data_db_path = current_app.instance_path + "/" + current_app.config['DATA_DB_NAME']
-    if "data_db" not in g:
-        g.data_db = sqlite3.connect(
-            data_db_path,  #current_app.config['DATABASE'],
-            detect_types=sqlite3.PARSE_DECLTYPES
-        )
-    return g.data_db
+    data_db = sqlite3.connect(
+        data_db_path,
+        detect_types=sqlite3.PARSE_DECLTYPES
+    )
+    return data_db
 
 
 def close_db(e=None):

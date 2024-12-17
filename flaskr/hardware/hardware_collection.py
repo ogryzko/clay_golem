@@ -7,7 +7,7 @@ from flaskr.hardware.hardware_base import Hardware, HardwareRelay, HardwareLamp,
 from flask import current_app, g
 from flaskr.db import get_db, get_data_db, clear_db
 from flaskr.utils.logger import Logger
-from flaskr.tasks.ventilation_task import VentilationTaskThread
+from flaskr.tasks.ventilation_task import TaskThread
 
 class HardwareCollection:
     """
@@ -191,7 +191,7 @@ class HardwareCollection:
             # and add here data about tasks
             tasks_list = []
             for t in self.tasks:
-                tasks_list.append(VentilationTaskThread.read_task_data(get_db(), t))  # returns a dict
+                tasks_list.append(TaskThread.read_task_data(self.redis_client, t))  # returns a dict
             hardware_list.extend(tasks_list)
             return hardware_list
 
@@ -199,7 +199,7 @@ class HardwareCollection:
         """
         Method to directly call from flask
         """
-        VentilationTaskThread.write_task_command(
+        TaskThread.write_task_command(
             self.redis_client,
             task_name,
             command,
