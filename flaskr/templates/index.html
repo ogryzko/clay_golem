@@ -116,16 +116,18 @@
             <h3>Состояние всех устройств</h3>
             <div class="row">
                 {% for device in devices %}
-                    <div class="col-md-4 mb-3">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">Устройство ID: {{ device.params.device_id }}</h5>
-                                <p class="card-text"><strong>Имя:</strong> {{ device.params.name }}</p>
-                                <p class="card-text"><strong>Статус:</strong> <span class="status-indicator">{{ device.params.status }}</span></p>
-                                <p class="card-text"><strong>Дата обновления:</strong> {{ device.params.last_time_active }}</p>
+                    {% if device.params.type != 'task' %}  <!-- Исключаем устройства типа 'task' -->
+                        <div class="col-md-4 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Устройство ID: {{ device.params.device_id }}</h5>
+                                    <p class="card-text"><strong>Имя:</strong> {{ device.params.name }}</p>
+                                    <p class="card-text"><strong>Статус:</strong> <span class="status-indicator">{{ device.params.status }}</span></p>
+                                    <p class="card-text"><strong>Дата обновления:</strong> {{ device.params.last_time_active }}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    {% endif %}
                 {% endfor %}
             </div>
         </div>
