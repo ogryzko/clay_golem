@@ -56,6 +56,7 @@ class TaskThread(Thread):
             "last_response": datetime.now().strftime("%m/%d/%Y %H:%M:%S"),
             "type": "task",
             "name": prefix,
+            "status": "unknown",
             "pid": pid,
             "step": 0,
             "running": False,
@@ -95,6 +96,7 @@ class TaskThread(Thread):
             try:
                 # first - read new user command
                 command = self.redis_client.get(self.COMMAND_KEY)
+                self.params["status"] = "ok"
                 if command:
                     self.params["last_user_command"] = command
                 if command == "start" and not self.params["running"] :
@@ -124,6 +126,8 @@ class TaskThread(Thread):
                 self.main_work(self.params["step"])
             except Exception as e:
                 self.logger.error(f"Error in task loop: {e}", exc_info=True)
+                self.params["status"] = "error"
+                self.params["last_error"] = str(e)
             self._write_status()
             time.sleep(1)  # Periodic check for new commands
 
