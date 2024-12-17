@@ -29,23 +29,42 @@
             Шаг {{ device.params.step }}/{{ total_stages }} - {{ device.params.current_stage_name }}
         </div>
     </div>
-    <!-- Parameters Table -->
-    <div id="paramsTable{{ device.params.device_id }}" style="display: none;">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Parameter</th>
-                    <th>Value</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for param, value in device.params.items() %}
-                    <tr>
-                        <td>{{ param }}</td>
-                        <td>{{ value }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+
+    <!-- Кнопка для открытия модального окна с параметрами -->
+    <button type="button" class="btn btn-info mt-3" data-bs-toggle="modal" data-bs-target="#paramsModal">
+        Показать параметры
+    </button>
+
+    <!-- Модальное окно с параметрами -->
+    <div class="modal fade" id="paramsModal" tabindex="-1" aria-labelledby="paramsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paramsModalLabel">Параметры устройства {{ device.params.name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Параметр</th>
+                                <th>Значение</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for param, value in device.params.items() %}
+                                <tr>
+                                    <td>{{ param }}</td>
+                                    <td>{{ value }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
