@@ -52,7 +52,7 @@ class SBAWrapper(BaseDriver):
     Every command must end with \r\n !
     """
 
-    def __init__(self, devname='/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN03WQZS-if00-port0', baudrate=19200, timeout=1):
+    def __init__(self, devname='/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DN03WQZS-if00-port0', baudrate=19200, timeout=2):
         super().__init__(host="", name="SBA5_driver")  # no host for that device
         self.devname = devname
         self.baudrate = baudrate
@@ -63,20 +63,24 @@ class SBAWrapper(BaseDriver):
     def send_command(self, command):
         try:
             self.serial_conn.write(command.encode('utf-8'))
-            self.serial_conn.flush()  # do we need it?
-            time.sleep(0.8)  # time for device to answer
+            #self.serial_conn.flush()  # do we need it?
+            #time.sleep(0.8)  # time for device to answer
             response = self.serial_conn.readline().decode('utf-8').strip(" ")
             # self.serial_conn.close()
             self.logger.info(f"Sent command {command} with resp {response}")
-            return response
+            return response.split(" ")
         except Exception as e:
             self.logger.error(f"{e}", exc_info=True)
             return f"Error: {str(e)}"
 
     def get_measure(self):
         raw_data = self.send_command("M\r\n")
-        co2 = raw_data[3]
-        return raw_data, co2
+        if len(raw_data) < 8:
+            # it means we got corrupted string as answer from device
+            return -255
+        else:
+            co2 = raw_data[3]
+            return co2
 
 
 if __name__ == "__main__":
