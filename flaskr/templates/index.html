@@ -61,16 +61,16 @@
     <!-- Nav tabs -->
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item">
-                <a class="nav-link active" id="relays-tab" data-toggle="tab" href="#relays" role="tab" aria-controls="relays" aria-selected="true">Relays</a>
+                <a class="nav-link active" id="relays-tab" data-toggle="tab" href="#relays" role="tab" aria-controls="relays" aria-selected="true">Реле</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="sensors-tab" data-toggle="tab" href="#sensors" role="tab" aria-controls="sensors" aria-selected="false">Sensors</a>
+                <a class="nav-link" id="sensors-tab" data-toggle="tab" href="#sensors" role="tab" aria-controls="sensors" aria-selected="false">Сенсоры</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="lamps-tab" data-toggle="tab" href="#lamps" role="tab" aria-controls="lamps" aria-selected="false">Lamps</a>
+                <a class="nav-link" id="lamps-tab" data-toggle="tab" href="#lamps" role="tab" aria-controls="lamps" aria-selected="false">Лампы</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="experiment-tab" data-toggle="tab" href="#experiment" role="tab" aria-controls="experiment" aria-selected="false">Experiment</a>
+                <a class="nav-link" id="experiment-tab" data-toggle="tab" href="#experiment" role="tab" aria-controls="experiment" aria-selected="false">Задачи</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" id="devices-tab" data-toggle="tab" href="#devices" role="tab" aria-controls="devices" aria-selected="false">Устройства</a>
@@ -210,17 +210,26 @@
             data: JSON.stringify({ command: command, args: args }),
             success: function(response) {
                 // Обновляем статус и время последнего обновления
-                document.getElementById('experiment-status').innerText = response.status;
+                const experimentStatusElement = document.getElementById('experiment-status');
+                if (experimentStatusElement) {
+                    experimentStatusElement.innerText = response.status;
+                } else {
+                    console.error('Element with id "experiment-status" not found.');
+                }
                 document.getElementById('last-update').innerText = new Date().toLocaleString();
-                document.getElementById('ventilation-task-data').innerText = JSON.stringify(response.task_data, null, 2); // Отображаем данные о задаче
+                // document.getElementById('ventilation-task-data').innerText = JSON.stringify(response.task_data, null, 2); // Отображаем данные о задаче
 
                 // Обновляем прогресс-бар
-                const step = response.task_data.params.step; // Извлекаем ��начение step
                 const progressBar = document.getElementById('progress-bar');
-                const progressPercentage = (step / 4) * 100; // Предположим, что максимальный шаг 4
-                progressBar.style.width = progressPercentage + '%';
-                progressBar.setAttribute('aria-valuenow', progressPercentage);
-                progressBar.innerText = Math.round(progressPercentage) + '%'; // Обновляем текст прогресс-бара
+                if (progressBar) {
+                    const step = response.task_data.params.step; // Извлекаем значение step
+                    const progressPercentage = (step / 4) * 100; // Предположим, что максимальный шаг 4
+                    progressBar.style.width = progressPercentage + '%';
+                    progressBar.setAttribute('aria-valuenow', progressPercentage);
+                    progressBar.innerText = Math.round(progressPercentage) + '%'; // Обновляем текст прогресс-бара
+                } else {
+                    console.error('Element with id "progress-bar" not found.');
+                }
 
                 createAlert(`Команда "${command}" успешно отправлена.`, 'success');
             },
@@ -230,7 +239,6 @@
             }
         });
     }
-
     function sendCommand(deviceId) {
         // Get the command and argument values
         const command = $(`#device${deviceId}_command`).val();
