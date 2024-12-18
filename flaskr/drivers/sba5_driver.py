@@ -64,7 +64,7 @@ class SBAWrapper(BaseDriver):
         try:
             self.serial_conn.write(command.encode('utf-8'))
             self.serial_conn.flush()  # do we need it?
-            time.sleep(0.5)  # time for device to answer
+            time.sleep(0.8)  # time for device to answer
             response = self.serial_conn.readline().decode('utf-8').strip()
             # self.serial_conn.close()
             self.logger.info(f"Sent command {command} with resp {response}")
@@ -76,7 +76,7 @@ class SBAWrapper(BaseDriver):
     def get_measure(self):
         raw_data = self.send_command("M\r\n")
         co2 = raw_data[2]
-        return co2
+        return raw_data, co2
 
 
 if __name__ == "__main__":
