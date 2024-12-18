@@ -31,12 +31,12 @@
     </div>
 
     <!-- Кнопка для открытия модального окна с параметрами -->
-    <button type="button" class="btn btn-info mt-3" data-bs-toggle="modal" data-bs-target="#paramsModal{{ device.params.name }}">
+    <button type="button" class="btn btn-info mt-3" data-bs-toggle="modal" data-bs-target="#paramsModal{{ device.params.name | replace(':', '-') }}">
         Показать параметры
     </button>
 
     <!-- Модальное окно с параметрами -->
-    <div class="modal fade" id="paramsModal{{ device.params.name }}" tabindex="-1" aria-labelledby="paramsModalLabel" aria-hidden="true">
+    <div class="modal fade" id="paramsModal{{ device.params.name | replace(':', '-') }}" tabindex="-1" aria-labelledby="paramsModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
