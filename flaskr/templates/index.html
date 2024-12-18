@@ -199,7 +199,7 @@
         $(this).tab('show');
     });
 
-    function sendExperimentCommand() {
+    function sendExperimentCommand(task_name) {
         const command = document.getElementById('command-select').value;
         const args = document.getElementById('command-args').value;
 
@@ -207,7 +207,7 @@
             url: '/handle-experiment',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ command: command, args: args }),
+            data: JSON.stringify({ command: command, args: args, task_name: task_name }),
             success: function(response) {
                 // Обновляем статус и время последнего обновления
                 const experimentStatusElement = document.getElementById('experiment-status');
