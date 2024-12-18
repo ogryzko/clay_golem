@@ -2,7 +2,8 @@ import json
 from abc import ABC, abstractmethod
 from typing import List, Dict, Type, TypeVar, Union
 from datetime import datetime
-from flaskr.drivers import pwm_lamp_driver, esp32_relay_driver
+from flaskr.drivers import pwm_lamp_driver, esp32_relay_driver, sba5_driver
+from flaskr.utils.leds_calibration import measure
 from flaskr.utils.logger import Logger
 T = TypeVar('T', bound='Hardware')
 
@@ -406,11 +407,9 @@ class HardwareSBA5(Hardware):
             self,
             device_id: int,  # unique id of device, to use in database and data handling
             name: str,  # human-readable name like "Hum sensor 12"
-            ip_addr: str,  # ip addr of real remote sensor
-            family: str,  # TODO: family can be  .... ? "roots_temp", "ext_temp", "ext_hum", "int_temp", "int_hum"
+            family: str = "SBA5",
             last_time_active: str = None,
             type: str = "sensor",
-            uptime_sec: int = 0,
             description: str = "",
             status: str = "unknown",
             last_error: str = ""
@@ -425,29 +424,21 @@ class HardwareSBA5(Hardware):
         self.params["last_time_active"] = last_time_active
         self.params["type"] = type
         self.params["family"] = family
-        self.params["uptime_sec"] = uptime_sec
         self.params["description"] = description
         self.params["status"] = status
+        self.params["units"] = "ppm co2"
         self.params["last_error"] = last_error
-        self.params["ip_addr"] = ip_addr
         # let`s set commands to represent them on web-page
         self.commands["---"] = None
         # let`s set data param represent it on web-page
-        if (family == "roots_temp") or (family == "ext_temp") or (family == "int_temp"):
-            self.data["temp"] = 0
-            self.params["units"] = "°C"
-            self.logger.info(f"created device {name} in family {family}")
-        elif (family == "ext_hum") or (family == "int_hum"):
-            self.data["hum"] = 0
-            self.params["units"] = "%"
-            self.logger.info(f"created device {name} in family {family}")
-        # it is weird, but sensors connected to relay pcb, so ...
-        self.driver = esp32_relay_driver.ESP32RelayDriver(
-            host=self.params["ip_addr"],
-            name=self.params["name"]
-        )
-        # for d in self.data:
-        #     self.logger.info(f"device {name} in family {family} has {d}")
+        self.data["co2"] = 0
+        # This sensor connected only to exp pc, so
+        try:
+            self.driver = sba5_driver.SBAWrapper()  # default settings
+        except Exception as e:
+            self.driver = None
+            self.params["status"] = "Not connected"
+            self.logger.error(str(e), exc_info=True)
 
     def run_command(self, command, arg):
         """
@@ -461,32 +452,26 @@ class HardwareSBA5(Hardware):
         """
         get info about state of that particular device
         """
-
-        code_name = self.params["family"]
-        info_dict = self.driver.get_info()
-        # self.logger.debug(self.params["device_id"])
-        if info_dict:
-            self.params["uptime"] = info_dict["uptime"]
-            if (code_name == "roots_temp") or (code_name == "ext_temp") or (code_name == "int_temp"):
-                temp = info_dict[code_name]
-                if temp == self.driver.SENSOR_ERROR_VALUE:
-                    self.params["status"] = "Error"
+        if self.driver:
+            # if device really exist
+            m = self.driver.error_code
+            while m == self.driver.error_code:
+                # we will answer the device until get normal result
+                raw_data, m = self.driver.get_measure()
+                if "Error:" in raw_data:
+                    # that means that something went critically wrong
+                    self.params["status"] = "error"
+                    # stop that cycle
                     return False
-                else:
-                    self.data["temp"] = round(info_dict[code_name], 2)
 
-            elif code_name == "ext_hum" or code_name == "int_hum":
-                hum = info_dict[code_name]
-                if hum == self.driver.SENSOR_ERROR_VALUE:
-                    self.params["status"] = "Error"
-                    return False
-                else:
-                    self.data["hum"] = round(info_dict[code_name], 2)
-            self.params["last_time_active"] = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
-            self.params["status"] = "ok"
+            if m != self.driver.error_code:
+                self.data["co2"] = m
+                self.params["last_time_active"] = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+                self.params["status"] = "ok"
             return True
         else:
             return False
+
 
 
 if __name__ == "__main__":

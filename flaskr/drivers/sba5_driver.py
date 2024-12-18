@@ -1,6 +1,7 @@
 import serial
 import time
 import sys
+from typing import Tuple
 sys.path.insert(0, "/opt/clay/clay_golem")
 from flaskr.drivers.base_driver import BaseDriver
 
@@ -59,8 +60,9 @@ class SBAWrapper(BaseDriver):
         self.timeout = timeout
         self.serial_conn = serial.Serial(devname, baudrate, timeout=timeout)
         self.logger.info("SBA5 handler created")
+        self.error_code = -255
 
-    def send_command(self, command):
+    def send_command(self, command) -> str:
         try:
             self.serial_conn.write(command.encode('utf-8'))
             #self.serial_conn.flush()  # do we need it?
@@ -68,22 +70,24 @@ class SBAWrapper(BaseDriver):
             response = self.serial_conn.readline().decode('utf-8').strip(" ")
             # self.serial_conn.close()
             self.logger.info(f"Sent command {command} with resp {response}")
-            return response.split(" ")
+            return response
         except Exception as e:
             self.logger.error(f"{e}", exc_info=True)
             return f"Error: {str(e)}"
 
-    def get_measure(self):
+    def get_measure(self) -> Tuple[str, int]:
         raw_data = self.send_command("M\r\n")
-        if len(raw_data) < 8:
+
+        if len(raw_data.split(" ")) < 8:
             # it means we got corrupted string as answer from device
-            return -255
+            # it is not a big deal, just send another request
+            return raw_data, self.error_code
         else:
-            co2 = raw_data[3]
-            return co2
+            co2 = raw_data.split(" ")[3]
+            return raw_data, int(co2)
 
 
 if __name__ == "__main__":
     s = SBAWrapper()
-    print(s.send_command("M\r\n"))
+    #print(s.send_command("M\r\n"))
     print(s.get_measure())
