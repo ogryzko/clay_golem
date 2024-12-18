@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0, "/opt/clay/clay_golem")
 print(sys.path)
-from flaskr.hardware.hardware_base import HardwareLamp, HardwareRelay,HardwareSensorOnRelayBoard
+from flaskr.hardware.hardware_base import HardwareLamp, HardwareRelay, HardwareSensorOnRelayBoard, HardwareSBA5
 from flaskr.hardware.hardware_collection import HardwareCollection
 from flask import current_app, g
 from typing import Any
@@ -12,7 +12,10 @@ def init_hardware(app_context):
     """
     """
     print("INIT HARDWARE")
-
+    sba5_device = HardwareSBA5(
+        device_id=99,
+        name="SBA5_CO2_sensor"
+    )
     # for now just stubs
     lamp0 = HardwareLamp(
         device_id=100,
@@ -179,6 +182,7 @@ def init_hardware(app_context):
         global_hardware_collection = HardwareCollection(
             app_context,
             hardware_dict={
+                99: sba5_device,
                 100: lamp0,
                 101: relay0,
                 102: relay1,

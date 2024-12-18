@@ -433,7 +433,12 @@ class HardwareSBA5(Hardware):
         # let`s set data param represent it on web-page
         self.data["co2"] = 0
         # This sensor connected only to exp pc, so
-        self.driver = sba5_driver.SBAWrapper()  # default settings
+        try:
+            self.driver = sba5_driver.SBAWrapper()  # default settings
+        except Exception as e:
+            self.driver = None
+            self.params["status"] = "Not connected"
+            self.logger.error(str(e), exc_info=True)
 
     def run_command(self, command, arg):
         """
@@ -447,21 +452,25 @@ class HardwareSBA5(Hardware):
         """
         get info about state of that particular device
         """
-        m = self.driver.error_code
-        while m == self.driver.error_code:
-            # we will answer the device until get normal result
-            raw_data, m = self.driver.get_measure()
-            if "Error:" in raw_data:
-                # that means that something went critically wrong
-                self.params["status"] = "error"
-                # stop that cycle
-                break
+        if self.driver:
+            # if device really exist
+            m = self.driver.error_code
+            while m == self.driver.error_code:
+                # we will answer the device until get normal result
+                raw_data, m = self.driver.get_measure()
+                if "Error:" in raw_data:
+                    # that means that something went critically wrong
+                    self.params["status"] = "error"
+                    # stop that cycle
+                    return False
 
-        if m != self.driver.error_code:
-            self.data["co2"] = m
-            self.params["last_time_active"] = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
-            self.params["status"] = "ok"
-        return True
+            if m != self.driver.error_code:
+                self.data["co2"] = m
+                self.params["last_time_active"] = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+                self.params["status"] = "ok"
+            return True
+        else:
+            return False
 
 
 
