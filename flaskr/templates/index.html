@@ -75,6 +75,9 @@
             <li class="nav-item">
                 <a class="nav-link" id="devices-tab" data-toggle="tab" href="#devices" role="tab" aria-controls="devices" aria-selected="false">Устройства</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" id="devices-tab" data-toggle="tab" href="#devices" role="tab" aria-controls="devices" aria-selected="false">Устройства</a>
+            </li>
         </ul>
 
 
@@ -198,7 +201,8 @@
         e.preventDefault();
         $(this).tab('show');
     });
-        function sendExperimentCommand() {
+
+    function sendExperimentCommand() {
         const command = document.getElementById('command-select').value;
         const args = document.getElementById('command-args').value;
 
