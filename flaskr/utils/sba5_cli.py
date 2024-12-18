@@ -4,6 +4,9 @@ import threading
 import time
 
 class SBAWrapper:
+    """
+    Small script to work with SBA-5 CO2 sensor from terminal
+    """
     def __init__(self, devname, baudrate, timeout):
         self.devname = devname
         self.baudrate = baudrate
