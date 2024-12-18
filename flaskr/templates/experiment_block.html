@@ -25,7 +25,7 @@
         {% set total_stages = device.stages | length %}
         {% set progress_percentage = (device.params.step / (total_stages - 1)) * 100 if total_stages > 1 else 100 %}
         
-        <div class="progress-bar" role="progressbar" style="width: {{ progress_percentage }}%;" aria-valuenow="{{ progress_percentage }}" aria-valuemin="0" aria-valuemax="100">
+        <div id="progress-bar" class="progress-bar" role="progressbar" style="width: {{ progress_percentage }}%;" aria-valuenow="{{ progress_percentage }}" aria-valuemin="0" aria-valuemax="100">
             Шаг {{ device.params.step }}/{{ total_stages }} - {{ device.params.current_stage_name }}
         </div>
     </div>
