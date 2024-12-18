@@ -1,5 +1,7 @@
 import serial
 import time
+import sys
+sys.path.insert(0, "/opt/clay/clay_golem")
 from flaskr.drivers.base_driver import BaseDriver
 
 class SBAWrapper(BaseDriver):
