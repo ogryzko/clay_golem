@@ -223,8 +223,10 @@
                 // Обновляем прогресс-бар
                 const progressBar = document.getElementById('progress-bar'+task_postfix);
                 if (progressBar) {
+                    const stages = response.task_data.stages
+                    const step_count = Object.keys(stages).length
                     const step = response.task_data.params.step; // Извлекаем значение step
-                    const progressPercentage = (step / 4) * 100; // Предположим, что максимальный шаг 4
+                    const progressPercentage = (step / step_count) * 100; // Предположим, что максимальный шаг 4
                     progressBar.style.width = progressPercentage + '%';
                     progressBar.setAttribute('aria-valuenow', progressPercentage);
                     progressBar.innerText = Math.round(progressPercentage) + '%'; // Обновляем текст прогресс-бара
