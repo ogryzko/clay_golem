@@ -22,32 +22,7 @@ function updateDeviceValues() {
         type: 'GET',
         dataType: 'json', // Expect JSON data in response
         success: function(devices) {
-            devices.forEach(function(device) {
-                // Update parameters and data for each device
-                // Assuming the device ID is unique and can be used to target the elements
-                $(`#device${device.params.device_id}_status_indicator`).text(device.params.status);
-                $(`#device${device.params.device_id}_last_response`).text(device.params.last_time_active);
-
-                // Update status class based on the device status
-                const statusClass = device.params.status === 'ok' ? 'status-ok' : 'status-error';
-                $(`#device${device.params.device_id}_status_indicator`)
-                    .removeClass('status-ok status-error')
-                    .addClass(statusClass);
-
-                // Update Parameters Table
-                const paramsTable = $(`#paramsTable${device.params.device_id} tbody`);
-                paramsTable.empty(); // Clear existing rows
-                $.each(device.params, function(param, value) {
-                    paramsTable.append(`<tr><td>${param}</td><td>${value}</td></tr>`);
-                });
-
-                // Update Data Table
-                const dataTable = $(`#dataTable${device.params.device_id} tbody`); // Assuming the data table directly follows the device div
-                dataTable.empty(); // Clear existing rows
-                $.each(device.data, function(dataKey, dataValue) {
-                    dataTable.append(`<tr><td>${dataKey}</td><td>${dataValue}</td></tr>`);
-                });
-            });
+            devices.forEach(handleDeviceUpdate);
         },
         error: function(xhr, status, error) {
             console.error("Error fetching device updates:", status, error);
@@ -60,6 +35,41 @@ $('#myTab a').on('click', function (e) {
     e.preventDefault();
     $(this).tab('show');
 });
+
+function handleDeviceUpdate() {
+        // Update parameters and data for each device
+        // Assuming the device ID is unique and can be used to target the elements
+        $(`#device${device.params.device_id}_status_indicator`).text(device.params.status);
+        $(`#device${device.params.device_id}_last_response`).text(device.params.last_time_active);
+
+        // Update status class based on the device status
+        const statusClass = device.params.status === 'ok' ? 'status-ok' : 'status-error';
+        $(`#device${device.params.device_id}_status_indicator`)
+            .removeClass('status-ok status-error')
+            .addClass(statusClass);
+
+        // Update Parameters Table
+        updateParamsTable(device);
+
+        // Update Data Table
+        updateDataTable(device);
+}
+
+function updateDataTable(device) {
+    const dataTable = $(`#dataTable${device.params.device_id} tbody`); // Assuming the data table directly follows the device div
+    dataTable.empty(); // Clear existing rows
+    $.each(device.data, function (dataKey, dataValue) {
+        dataTable.append(`<tr><td>${dataKey}</td><td>${dataValue}</td></tr>`);
+    });
+}
+
+function updateParamsTable(device) {
+    const paramsTable = $(`#paramsTable${device.params.device_id} tbody`);
+    paramsTable.empty(); // Clear existing rows
+    $.each(device.params, function (param, value) {
+        paramsTable.append(`<tr><td>${param}</td><td>${value}</td></tr>`);
+    });
+}
 
 function sendExperimentCommand(task_name) {
     task_postfix = task_name.replace(':', '-')
